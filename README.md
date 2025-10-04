@@ -41,15 +41,6 @@ Eigen    ≥ 3.3.4
 
 `sudo apt install libeigen3-dev`
 
-### 2.3 **livox_ros_driver**
-
-Follow [livox_ros_driver Installation](https://github.com/Livox-SDK/livox_ros_driver).
-
-*Remarks:*
-
-* Since the M-detector support Livox serials LiDAR firstly, so the **livox_ros_driver** must be installed and **sourced** before run any M-detector launch file.
-* How to source? The easiest way is add the line `source $Livox_ros_driver_dir$/devel/setup.bash` to the end of file `~/.bashrc`, where `$Livox_ros_driver_dir$` is the directory of the livox ros driver workspace (should be the `ws_livox` directory if you completely followed the livox official document).
-
 ### 2.4 TBB
 
 Install gcc-9 g++-9

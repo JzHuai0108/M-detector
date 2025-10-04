@@ -1,20 +1,42 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5)
 project(m_detector)
 
-SET(CMAKE_BUILD_TYPE "Release")
-
-ADD_COMPILE_OPTIONS(-std=c++17 )
-set( CMAKE_CXX_FLAGS "-std=c++17 -O3 -ltbb" ) 
-
-add_definitions(-DROOT_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\")
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fexceptions" )
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -ltbb -pthread -std=c++1z -std=c++17 -fexceptions")
 
-message("Current CPU archtecture: ${CMAKE_SYSTEM_PROCESSOR}")
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
+# ------------------------------------------------------------------------------
+# Warnings & optimization flags by compiler + config (CMake 3.5-safe)
+# ------------------------------------------------------------------------------
+if(MSVC)
+  # /permissive- for stricter C++ conformance (VS 2017+ supports it; harmless otherwise)
+  if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_options(/O2 /W4 /permissive-)
+  else()
+    add_compile_options(/Od /W4 /Zi /permissive-)
+  endif()
+else()
+  # Avoid -ffast-math and -march=native (can change numerical results)
+  if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_options(-O3 -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wno-unused-function)
+  else()
+    add_compile_options(-O1 -g -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wno-unused-function)
+  endif()
+  # Ensure exceptions enabled (some toolchains disable by default)
+  add_compile_options(-fexceptions)
+endif()
+
+# ------------------------------------------------------------------------------
+# ROOT_DIR macro (CMake 3.5: use add_definitions)
+# ------------------------------------------------------------------------------
+add_definitions(-DROOT_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\")
+
+message(STATUS "Current CPU architecture: ${CMAKE_SYSTEM_PROCESSOR}")
+
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)" )
   include(ProcessorCount)
   ProcessorCount(N)
@@ -43,13 +65,8 @@ endif()
 find_package(OpenMP QUIET)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   ${OpenMP_C_FLAGS}")
+find_package(TBB REQUIRED COMPONENTS tbb)
 
-find_package(PythonLibs REQUIRED)
-# find_path(MATPLOTLIB_CPP_INCLUDE_DIRS "matplotlibcpp.h")
-
-set(TBB_DIR "/usr/local/tbb-2019_U8")
-include("/home/huajie/package/oneTBB-2019_U8/cmake/TBBBuild.cmake")
-tbb_build(TBB_ROOT "/home/huajie/package/oneTBB-2019_U8" CONFIG_DIR TBB_DIR)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
@@ -59,14 +76,12 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   pcl_ros
   tf
-  livox_ros_driver
   message_generation
   eigen_conversions
 )
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
-find_package(TBB REQUIRED)
 find_package(OpenCV REQUIRED)
 
 message(Eigen: ${EIGEN3_INCLUDE_DIR})
@@ -78,9 +93,15 @@ include_directories(
   ${PYTHON_INCLUDE_DIRS}
   include)
 
-generate_messages(
- DEPENDENCIES
- geometry_msgs
+add_message_files(FILES
+  CustomPoint.msg
+  CustomMsg.msg
+)
+
+## Generate added messages and services with any dependencies listed here
+generate_messages(DEPENDENCIES
+  geometry_msgs
+  std_msgs
 )
 
 catkin_package(

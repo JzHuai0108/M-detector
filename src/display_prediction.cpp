@@ -7,7 +7,7 @@
 #include <iostream>
 #include <csignal>
 #include <unistd.h>
-#include <Python.h>
+// #include <Python.h>
 // #include <so3_math.h>
 #include <ros/ros.h>
 #include <Eigen/Core>
@@ -29,7 +29,7 @@
 #include <unistd.h> 
 #include <dirent.h> 
 #include <iomanip>
-#include <livox_ros_driver/CustomMsg.h>
+#include <m_detector/CustomMsg.h>
 
 using namespace std;
 
@@ -179,7 +179,7 @@ void PointsCallback(const sensor_msgs::PointCloud2ConstPtr& msg_in)
 }
 
 
-void AviaPointsCallback(const livox_ros_driver::CustomMsg::ConstPtr &msg_in)
+void AviaPointsCallback(const m_detector::CustomMsg::ConstPtr &msg_in)
 {   
     PointCloudXYZI::Ptr points_in(new PointCloudXYZI());
     points_in->resize(msg_in->point_num);
