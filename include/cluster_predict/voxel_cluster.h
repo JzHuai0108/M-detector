@@ -133,7 +133,7 @@ public:
 
     void createVoxelMap(std::vector<Point_Cloud>  &umap_in, std::unordered_set<int> &used_map_set)
     {   
-        for (int i = 0; i < points_.size(); i++)
+        for (int i = 0; i < static_cast<int>(points_.size()); i++)
         {
             PointType tmp;
             tmp.x = points_.points[i].x;
@@ -162,9 +162,9 @@ public:
         }
     }
 
-    void createVoxelMap(std::vector<Point_Cloud> &umap_in, bool index_en)
+    void createVoxelMap(std::vector<Point_Cloud> &umap_in, bool /*index_en*/)
     {   
-        for (int i = 0; i < points_.size(); i++)
+        for (int i = 0; i < static_cast<int>(points_.size()); i++)
         {
             PointType tmp;
             tmp.x = points_.points[i].x;
@@ -200,7 +200,7 @@ public:
 
     void createVoxelMap(std::unordered_map<int, Point_Cloud::Ptr> &umap)
     {
-        for (int i = 0; i < points_.size(); i++)
+        for (int i = 0; i < static_cast<int>(points_.size()); i++)
         {
             PointType tmp;
             tmp.x = points_.points[i].x;
@@ -273,7 +273,7 @@ public:
     {   
         // std::vector<Point_Cloud> umap_copy = umap;
         // std::unordered_set<int> voxel_set_copy = voxel_set;
-        for (int voxel_ind = 0; voxel_ind < voxel_list.size(); voxel_ind++)
+        for (int voxel_ind = 0; voxel_ind < static_cast<int>(voxel_list.size()); voxel_ind++)
         {   
             int voxel_cur = voxel_list[voxel_ind];
             if (voxel_set.count(voxel_cur))

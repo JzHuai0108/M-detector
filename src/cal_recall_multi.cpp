@@ -205,7 +205,7 @@ void NuscenesCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &
 
         int tp = 0, fn = 0, fp = 0, op = 0, tn = 0, count = 0;
         float iou = 0.0f;
-        float cur_self_vel;
+        // float cur_self_vel;
 
         std::unordered_map<int, int> labels_map;
         std::unordered_map<int, int> predicts_map;
@@ -224,7 +224,8 @@ void NuscenesCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &
                 pred_input.read((char *) &pred_num, sizeof(int));
                 pred_num = pred_num & 0xFFFF;
 
-                int  label_num = -1, id = -1;
+                int  label_num = -1;
+                // int  id = -1;
                 // pred_input >> pred_num;
                 label_input.read((char *) &label_num, sizeof(int));
                 label_num = label_num & 0xFFFF;
@@ -305,7 +306,7 @@ void NuscenesCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &
             if(class_num == 1) recalls_pedestrian.push_back((float)predicts_map[it->first]/(float)it->second);
             if(class_num == 3) recalls_cyclist.push_back((float)predicts_map[it->first]/(float)it->second);
         }
-        for(int i = 0; i < objects_numbers_nuscenes.size(); i++)
+        for(int i = 0; i < static_cast<int>(objects_numbers_nuscenes.size()); i++)
         {
             cout << "average_recall of " << objects_types_map_nuscenes[i] << " is: " << average_recalls_nuscenes[i] << " objects number: " << objects_numbers_nuscenes[i] << " variance: " << average_recalls2_nuscenes[i] - average_recalls_nuscenes[i] * average_recalls_nuscenes[i]<< endl;
         }
@@ -317,7 +318,7 @@ void NuscenesCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &
             class_nums.clear();
             class_recalls.clear();
             class_var.clear();
-            for(int i = 0; i < objects_numbers_nuscenes.size(); i++)
+            for(int i = 0; i < static_cast<int>(objects_numbers_nuscenes.size()); i++)
             {
                 class_nums.push_back(objects_numbers_nuscenes[i]);
                 class_recalls.push_back(average_recalls_nuscenes[i]);
@@ -326,7 +327,7 @@ void NuscenesCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &
         }
     }
     recall_rec << total_tp << " " << total_fp << " "  << total_fn << " " << total_tn << " ";
-    for(int i = 0; i < class_recalls.size(); i++)
+    for(int i = 0; i < static_cast<int>(class_recalls.size()); i++)
     {
         recall_rec << class_recalls[i] << " " << class_nums[i] << " " << class_var[i] << " ";
     }
@@ -334,7 +335,7 @@ void NuscenesCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &
     // pred_input.seekg(0, std::ios::beg);
 }
 
-void WaymoCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &recalls_pedestrian, std::vector<float> &recalls_cyclist)
+void WaymoCalRecall(std::vector<float> &/*recalls_vehicle*/, std::vector<float> &/*recalls_pedestrian*/, std::vector<float> &/*recalls_cyclist*/)
 {
     int label_file_num = 0;
     if(label_folder != "")
@@ -435,7 +436,8 @@ void WaymoCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
             pred_input.read((char *) &pred_num, sizeof(int));
             pred_num = pred_num & 0xFFFF;
 
-            int  label_num = -1, id = -1;
+            int  label_num = -1;
+            // int id = -1;
             // pred_input >> pred_num;
             label_input.read((char *) &label_num, sizeof(int));
             label_num = label_num & 0xFFFF;
@@ -498,7 +500,7 @@ void WaymoCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
             average_recalls2_waymo[class_num] = average_recalls2_waymo[class_num] * (objects_numbers_waymo[class_num] - 1)/objects_numbers_waymo[class_num] + (float)predicts_map[it->first]/(float)it->second * (float)predicts_map[it->first]/(float)it->second/ objects_numbers_waymo[class_num];
 
         }
-        for(int i = 0; i < objects_numbers_waymo.size(); i++)
+        for(int i = 0; i < static_cast<int>(objects_numbers_waymo.size()); i++)
         {
             cout << "average_recall of " << objects_types_map_waymo[i] << " is: " << average_recalls_waymo[i] << " objects number: " << objects_numbers_waymo[i] << " variance: " << average_recalls2_waymo[i] - average_recalls_waymo[i] * average_recalls_waymo[i] << endl;
         }
@@ -511,7 +513,7 @@ void WaymoCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
             class_nums.clear();
             class_recalls.clear();
             class_var.clear();
-            for(int i = 0; i < objects_numbers_waymo.size(); i++)
+            for(int i = 0; i < static_cast<int>(objects_numbers_waymo.size()); i++)
             {
                 class_nums.push_back(objects_numbers_waymo[i]);
                 class_recalls.push_back(average_recalls_waymo[i]);
@@ -521,7 +523,7 @@ void WaymoCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
     }
     
     recall_rec << total_tp << " " << total_fp << " "  << total_fn << " " << total_tn << " ";
-    for(int i = 0; i < class_recalls.size(); i++)
+    for(int i = 0; i < static_cast<int>(class_recalls.size()); i++)
     {
         recall_rec << class_recalls[i] << " " << class_nums[i] << " " << class_var[i] << " ";
     }
@@ -628,7 +630,8 @@ void KittiCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
             pred_input.read((char *) &pred_num, sizeof(int));
             pred_num = pred_num & 0xFFFF;
 
-            int  label_num = -1, id = -1;
+            int  label_num = -1;
+            // int id = -1;
             // pred_input >> pred_num;
             label_input.read((char *) &label_num, sizeof(int));
             label_num = label_num & 0xFFFF;
@@ -694,7 +697,7 @@ void KittiCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
             if(class_num == 4) recalls_pedestrian.push_back((float)predicts_map[it->first]/(float)it->second);
             if(class_num == 6) recalls_cyclist.push_back((float)predicts_map[it->first]/(float)it->second);
         }
-        for(int i = 0; i < objects_numbers_kitti.size(); i++)
+        for(int i = 0; i < static_cast<int>(objects_numbers_kitti.size()); i++)
         {
             cout << "average_recall of " << objects_types_map_kitti[i] << " is: " << average_recalls_kitti[i] << " objects number: " << objects_numbers_kitti[i] << " variance: " << average_recalls2_kitti[i] - average_recalls_kitti[i] * average_recalls_kitti[i] << endl;
         }
@@ -709,7 +712,7 @@ void KittiCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
             class_nums.clear();
             class_recalls.clear();
             class_var.clear();
-            for(int i = 0; i < objects_numbers_kitti.size(); i++)
+            for(int i = 0; i < static_cast<int>(objects_numbers_kitti.size()); i++)
             {
                 class_nums.push_back(objects_numbers_kitti[i]);
                 class_recalls.push_back(average_recalls_kitti[i]);
@@ -719,7 +722,7 @@ void KittiCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
     }
     
     recall_rec << total_tp << " " << total_fp << " "  << total_fn << " " << total_tn << " " << ((float)total_tp)/(float)(total_tp+total_fn+total_fp) << " " ;
-    for(int i = 0; i < class_recalls.size(); i++)
+    for(int i = 0; i < static_cast<int>(class_recalls.size()); i++)
     {
         recall_rec << class_recalls[i] << " " << class_nums[i] << " " << class_var[i] << " ";
     }
@@ -727,7 +730,7 @@ void KittiCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
 
 }
 
-void AviaCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &recalls_pedestrian)
+void AviaCalRecall(std::vector<float> &/*recalls_vehicle*/, std::vector<float> &/*recalls_pedestrian*/)
 {
     int label_file_num = 0;
     if(label_folder != "")
@@ -832,7 +835,8 @@ void AviaCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &reca
             pred_input.read((char *) &pred_num, sizeof(int));
             pred_num = pred_num & 0xFFFF;
 
-            int  label_num = -1, id = -1;
+            int  label_num = -1;
+            // int id = -1;
             // pred_input >> pred_num;
             label_input.read((char *) &label_num, sizeof(int));
             label_num = label_num & 0xFFFF;
@@ -896,7 +900,7 @@ void AviaCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &reca
             average_recalls2_kitti[class_num] = average_recalls2_kitti[class_num] * (objects_numbers_kitti[class_num] - 1)/objects_numbers_kitti[class_num] + (float)predicts_map[it->first]/(float)it->second * (float)predicts_map[it->first]/(float)it->second/ objects_numbers_kitti[class_num];
             
         }
-        for(int i = 0; i < objects_numbers_kitti.size(); i++)
+        for(int i = 0; i < static_cast<int>(objects_numbers_kitti.size()); i++)
         {
             cout << "average_recall of " << objects_types_map_kitti[i] << " is: " << average_recalls_kitti[i] << " objects number: " << objects_numbers_kitti[i]<< " variance: " << average_recalls2_kitti[i] - average_recalls_kitti[i] * average_recalls_kitti[i] << endl;
         }
@@ -910,7 +914,7 @@ void AviaCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &reca
             class_nums.clear();
             class_recalls.clear();
             class_var.clear();
-            for(int i = 0; i < objects_numbers_kitti.size(); i++)
+            for(int i = 0; i < static_cast<int>(objects_numbers_kitti.size()); i++)
             {
                 class_nums.push_back(objects_numbers_kitti[i]);
                 class_recalls.push_back(average_recalls_kitti[i]);
@@ -920,7 +924,7 @@ void AviaCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &reca
     }
     
     recall_rec << total_tp << " " << total_fp << " "  << total_fn << " " << total_tn << " ";
-    for(int i = 0; i < class_recalls.size(); i++)
+    for(int i = 0; i < static_cast<int>(class_recalls.size()); i++)
     {
         recall_rec << class_recalls[i] << " " << class_nums[i] << " " << class_var[i] << " ";
     }
@@ -1390,7 +1394,7 @@ int main(int argc, char** argv)
             closedir(pred_dir);
         }
         
-        for(int i = 0; i < seq_names.size(); i++ )
+        for(int i = 0; i < static_cast<int>(seq_names.size()); i++ )
         {       
             pred_folder = all_pred + seq_names[i] + "/predictions/";
             semantic_folder = all_semantic + seq_names[i] + "/predictions/";

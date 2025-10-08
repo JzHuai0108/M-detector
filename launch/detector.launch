@@ -1,0 +1,26 @@
+<launch>
+  <arg name="rviz" default="true" />
+  <arg name="configyaml" default="$(find m_detector)/config/xiangyin_hesai32_mos.yaml" />
+  <arg name="pc_folder" default="" />
+  <arg name="pose_file" default="" />
+  <arg name="output_dir" default="$(env HOME)/m_detector_out" />
+  <arg name="pose_log" default="false" />
+
+  <rosparam command="load" file="$(arg configyaml)" />
+  <param name="dyn_obj/out_file"            type="string" value="$(arg output_dir)/out/"/>
+  <param name="dyn_obj/out_file_origin"     type="string" value="$(arg output_dir)/out_origin/"/>
+  <param name="dyn_obj/time_file"           type="string" value="$(arg output_dir)/time_file.txt"/>
+  <param name="dyn_obj/pose_log"            type="bool"   value="$(arg pose_log)"/>
+  <param name="dyn_obj/pose_log_file"       type="string" value="$(arg output_dir)/pose_log.txt"/>
+  <param name="dyn_obj/cluster_out_file"    type="string" value="$(arg output_dir)/cluster_out.txt"/>
+  <param name="dyn_obj/time_breakdown_file" type="string" value="$(arg output_dir)/time_breakdown.txt"/>
+
+  <node pkg="m_detector" type="reader" name="dynfilter_reader" args="$(arg pc_folder) $(arg pose_file)" output="screen">
+  </node>
+
+  <node pkg="m_detector" type="dynfilter" name="dynfilter" output="screen" />
+  <group if="$(arg rviz)">
+  <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find m_detector)/rviz/demo.rviz" />
+  </group>  	  
+
+</launch>

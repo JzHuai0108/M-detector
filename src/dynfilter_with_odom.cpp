@@ -3,10 +3,12 @@
 #include <mutex>
 #include <math.h>
 #include <thread>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <csignal>
 #include <unistd.h>
+
 // #include <Python.h>
 #include <ros/ros.h>
 #include <Eigen/Core>
@@ -49,13 +51,13 @@ float   dyn_windows_dur = 0.5;
 bool    dyn_filter_en = true, dyn_filter_dbg_en = true;
 string  points_topic, odom_topic;
 string  out_folder, out_folder_origin;
-double  lidar_end_time = 0;
+// double  lidar_end_time = 0;
 int     dataset = 0;
 int     cur_frame = 0;
 
 deque<M3D> buffer_rots;
 deque<V3D> buffer_poss;
-deque<double> buffer_times;
+deque<ros::Time> buffer_times;
 deque<boost::shared_ptr<PointCloudXYZI>> buffer_pcs;
 
 
@@ -71,8 +73,8 @@ void OdomCallback(const nav_msgs::Odometry &cur_odom)
     cur_pos << cur_odom.pose.pose.position.x, cur_odom.pose.pose.position.y, cur_odom.pose.pose.position.z;
     buffer_rots.push_back(cur_rot);
     buffer_poss.push_back(cur_pos);
-    lidar_end_time = cur_odom.header.stamp.toSec();
-    buffer_times.push_back(lidar_end_time);
+    // lidar_end_time = cur_odom.header.stamp.toSec();
+    buffer_times.push_back(cur_odom.header.stamp);
 }
 
 void PointsCallback(const sensor_msgs::PointCloud2ConstPtr& msg_in)
@@ -83,7 +85,7 @@ void PointsCallback(const sensor_msgs::PointCloud2ConstPtr& msg_in)
 }
 
 
-void TimerCallback(const ros::TimerEvent& e)
+void TimerCallback(const ros::TimerEvent& /*e*/)
 {
     if(buffer_pcs.size() > 0 && buffer_poss.size() > 0 && buffer_rots.size() > 0 && buffer_times.size() > 0)
     {
@@ -97,12 +99,12 @@ void TimerCallback(const ros::TimerEvent& e)
         buffer_times.pop_front();
         string file_name = out_folder;
         stringstream ss;
-        ss << setw(6) << setfill('0') << cur_frame ;
+        ss << cur_time;
         file_name += ss.str(); 
         file_name.append(".label");
         string file_name_origin = out_folder_origin;
         stringstream sss;
-        sss << setw(6) << setfill('0') << cur_frame ;
+        sss << cur_time;
         file_name_origin += sss.str(); 
         file_name_origin.append(".label");
 
@@ -119,10 +121,21 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "dynfilter_odom");
     ros::NodeHandle nh;
-    nh.param<string>("dyn_obj/points_topic", points_topic, "");
-    nh.param<string>("dyn_obj/odom_topic", odom_topic, "");
-    nh.param<string>("dyn_obj/out_file", out_folder,"");
-    nh.param<string>("dyn_obj/out_file_origin", out_folder_origin, "");
+
+    nh.param<string>("dyn_obj/points_topic", points_topic, ""); // points in lidar frame
+    nh.param<string>("dyn_obj/odom_topic", odom_topic, "");  // lidar pose relative to a world frame
+    nh.param<string>("dyn_obj/out_file", out_folder,""); // the folder to save the point status labels
+    nh.param<string>("dyn_obj/out_file_origin", out_folder_origin, ""); // the folder to save the original point status labels, more dynamic points than out_file.
+
+    namespace fs = std::filesystem;
+    try {
+      if (fs::create_directories(out_folder))
+        std::cout << "Created folder: " << out_folder << std::endl;
+      if (fs::create_directories(out_folder_origin))
+        std::cout << "Created folder: " << out_folder_origin << std::endl;
+    } catch (const fs::filesystem_error& e) {
+       std::cerr << "Failed to create output folders: " << e.what() << std::endl;
+    }
 
     DynObjFilt->init(nh);    
     /*** ROS subscribe and publisher initialization ***/

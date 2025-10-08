@@ -320,7 +320,7 @@ public:
         project_R = rot;
         project_T = transl;
         map_index = frame;
-        double t = omp_get_wtime();
+        // double t = omp_get_wtime();
         std::for_each(std::execution::par, index_vector.begin(), index_vector.end(), [&](const int &i)
         {
             depth_map[i].clear();
@@ -346,7 +346,7 @@ public:
     int cur_point_soph_pointers = 0;
     int max_pointers_num = 0;
     int frame_num_for_rec = 0;
-    std::deque<PointCloudXYZI::Ptr> pcl_his_list;;
+    std::deque<PointCloudXYZI::Ptr> pcl_his_list;
     PointCloudXYZI::Ptr laserCloudSteadObj;
     PointCloudXYZI::Ptr laserCloudSteadObj_hist;
     PointCloudXYZI::Ptr laserCloudDynObj;
@@ -438,8 +438,8 @@ public:
     ~DynObjFilter(){};
 
     void init(ros::NodeHandle& nh);
-    void filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_end, const V3D & pos_end, const double & scan_end_time);
-    void publish_dyn(const ros::Publisher & pub_point_out, const ros::Publisher & pub_frame_out, const ros::Publisher & pub_steady_points, const double & scan_end_time);
+    void filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_end, const V3D & pos_end, const ros::Time& scan_end_time);
+    void publish_dyn(const ros::Publisher & pub_point_out, const ros::Publisher & pub_frame_out, const ros::Publisher & pub_steady_points, const ros::Time& scan_end_time);
     void set_path(string file_path, string file_path_origin);
 
     void  Points2Buffer(vector<point_soph*> &points, std::vector<int> &index_vector);

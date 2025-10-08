@@ -88,7 +88,7 @@ void PointsCallback(const sensor_msgs::PointCloud2ConstPtr& msg_in)
 
         int tp = 0, fn = 0, fp = 0, count = 0;
         float iou = 0.0f;
-        for (int i=0; i<points_in->points.size(); i++) 
+        for (int i=0; i<static_cast<int>(points_in->points.size()); i++) 
         {
             pcl::PointXYZI point;
             point.x = points_in->points[i].x;
@@ -185,7 +185,7 @@ void AviaPointsCallback(const m_detector::CustomMsg::ConstPtr &msg_in)
     points_in->resize(msg_in->point_num);
     std::cout << "points size: " << msg_in->point_num << std::endl;
     if(msg_in->point_num == 0) return;
-    for(int i = 0; i < msg_in->point_num; i++)
+    for(int i = 0; i < static_cast<int>(msg_in->point_num); i++)
     {
         points_in->points[i].x = msg_in->points[i].x;
         points_in->points[i].y = msg_in->points[i].y;
@@ -227,7 +227,7 @@ void AviaPointsCallback(const m_detector::CustomMsg::ConstPtr &msg_in)
 
         int tp = 0, fn = 0, fp = 0, count = 0;
         float iou = 0.0f;
-        for (int i=0; i<points_in->points.size(); i++) 
+        for (int i=0; i<static_cast<int>(points_in->points.size()); i++) 
         {
             pcl::PointXYZI point;
             point.x = points_in->points[i].x;
@@ -323,9 +323,9 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "display_prediction");
     ros::NodeHandle nh;
 
-    nh.param<string>("dyn_obj/pc_file", pc_folder,"");
-    nh.param<string>("dyn_obj/pred_file", pred_folder,"");
-    nh.param<string>("dyn_obj/pc_topic", points_topic,"/velodyne_points");
+    nh.param<string>("dyn_obj/pc_file", pc_folder,""); // unneeded
+    nh.param<string>("dyn_obj/pred_file", pred_folder,""); // the folder containing the point status labels
+    nh.param<string>("dyn_obj/pc_topic", points_topic,"/velodyne_points"); // The same point clouds fed to moving object filter
     nh.param<string>("dyn_obj/frame_id", frame_id, "camera_init");
 
     
