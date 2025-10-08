@@ -353,6 +353,20 @@ int main(int argc, char** argv) {
   static tf2_ros::TransformBroadcaster br;
   ros::Rate rate(publish_rate_hz);
 
+  auto waitFor = [&](ros::Publisher& pub, const std::string& name, size_t min_subs=1){
+    ros::Rate r(10);
+    while (ros::ok() && pub.getNumSubscribers() < min_subs) {
+      ROS_INFO_THROTTLE(2.0, "Waiting for subscriber on %s...", name.c_str());
+      r.sleep();
+      ros::spinOnce();
+    }
+  };
+
+  std::cout << "Waiting for subscribers ... " << std::endl;
+  waitFor(pub_cloud, points_topic, 1);
+  waitFor(pub_odom,  odom_topic,   1);
+  std::cout << "Playing pc and pose ... " << std::endl;
+
   size_t fi = 0;
   for (const auto& path : files) {
     // 1) derive timestamp from filename
