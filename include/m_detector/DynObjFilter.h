@@ -27,7 +27,7 @@
 #include <algorithm>
 #include <chrono>
 #include <execution>
-#include <mutex>
+
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <opencv2/highgui.hpp>
@@ -35,14 +35,14 @@
 // #include <tinycolormap.hpp>
 
 
-using namespace std;
-using namespace Eigen;
-using namespace cv;
+// using namespace std;
+// using namespace Eigen;
+// using namespace cv;
 
 /*** For dynamic object filtering ***/
 #define PI_MATH (3.141593f)
 #define HASH_P 116101
-#define MAX_N 100000
+// #define MAX_N 100000
 #define MAX_2D_N       (564393) //1317755(1317755) //(50086) 39489912 // MAX_1D * MAX_1D_HALF
 #define MAX_1D         (1257) //(2095) //(317)  // 2*pi/ hor_resolution
 #define MAX_1D_HALF    (449) //3142() //158 31416 pi / ver_resolution
@@ -61,8 +61,8 @@ struct point_soph
     int          position;
     int          occu_times;
     int          is_occu_times;
-    Vector3i     occu_index;
-    Vector3i     is_occu_index;
+    Eigen::Vector3i     occu_index;
+    Eigen::Vector3i     is_occu_index;
     double       time;
     V3F          occ_vec;
     V3F          is_occ_vec;
@@ -75,9 +75,9 @@ struct point_soph
     float        intensity;
     bool         is_distort;
     V3D          last_closest;
-    array<float, MAP_NUM> last_depth_interps = {};
-    array<V3F, HASH_PRIM> last_vecs = {};
-    array<Vector3i, HASH_PRIM> last_positions = {};   
+    std::array<float, MAP_NUM> last_depth_interps = {};
+    std::array<V3F, HASH_PRIM> last_vecs = {};
+    std::array<Eigen::Vector3i, HASH_PRIM> last_positions = {};   
     typedef boost::shared_ptr<point_soph> Ptr;
     point_soph(V3D & point, float & hor_resolution_max, float & ver_resolution_max)
     {
@@ -89,8 +89,8 @@ struct point_soph
         position   = hor_ind * MAX_1D_HALF + ver_ind;
         time       = -1;
         occu_times = is_occu_times = 0;
-        occu_index = -1*Vector3i::Ones();
-        is_occu_index = -1*Vector3i::Ones();
+        occu_index = -1*Eigen::Vector3i::Ones();
+        is_occu_index = -1*Eigen::Vector3i::Ones();
         occ_vec.setZero();
         is_occ_vec.setZero();
         transl.setZero();
@@ -98,19 +98,20 @@ struct point_soph
         rot.setOnes();
         last_depth_interps.fill(0.0);
         last_vecs.fill(V3F::Zero());
-        last_positions.fill(Vector3i::Zero());
+        last_positions.fill(Eigen::Vector3i::Zero());
         is_distort = false;
         cur_vec.setZero();
         local.setZero();
         last_closest.setZero();
-    };
+    }
+
     point_soph()
     {
         vec.setZero();
         hor_ind  = ver_ind = position = occu_times = is_occu_times = 0;
         time       = -1;
-        occu_index = -1*Vector3i::Ones();
-        is_occu_index = -1*Vector3i::Ones();
+        occu_index = -1*Eigen::Vector3i::Ones();
+        is_occu_index = -1*Eigen::Vector3i::Ones();
         occ_vec.setZero();
         is_occ_vec.setZero();
         transl.setZero();
@@ -118,12 +119,13 @@ struct point_soph
         rot.setOnes();
         last_depth_interps.fill(0.0);
         last_vecs.fill(V3F::Zero());
-        last_positions.fill(Vector3i::Zero());
+        last_positions.fill(Eigen::Vector3i::Zero());
         is_distort = false;
         cur_vec.setZero();
         local.setZero();
         last_closest.setZero();
-    };
+    }
+
     point_soph(V3F s, int ind1, int ind2, int pos)
     {
         vec = s;
@@ -132,8 +134,8 @@ struct point_soph
         position = pos;
         occu_times = is_occu_times = 0;
         time = -1;
-        occu_index = -1*Vector3i::Ones();
-        is_occu_index = -1*Vector3i::Ones();
+        occu_index = -1*Eigen::Vector3i::Ones();
+        is_occu_index = -1*Eigen::Vector3i::Ones();
         occ_vec.setZero();
         is_occ_vec.setZero();
         transl.setZero();
@@ -141,12 +143,13 @@ struct point_soph
         rot.setOnes();
         last_depth_interps.fill(0.0);
         last_vecs.fill(V3F::Zero());
-        last_positions.fill(Vector3i::Zero());
+        last_positions.fill(Eigen::Vector3i::Zero());
         is_distort = false;
         cur_vec.setZero();
         local.setZero();
         last_closest.setZero();
-    };
+    }
+
     point_soph(const point_soph & cur)
     {   
         vec = cur.vec;
@@ -171,7 +174,34 @@ struct point_soph
         is_distort = cur.is_distort;
         cur_vec = cur.cur_vec;
         last_closest = cur.last_closest;
-    };
+    }
+
+    point_soph& operator=(const point_soph& rhs) {
+        if (this == &rhs) return *this;
+        vec = rhs.vec;
+        hor_ind = rhs.hor_ind;
+        ver_ind = rhs.ver_ind;
+        position = rhs.position;
+        time = rhs.time;
+        occu_times = rhs.occu_times;
+        is_occu_times = rhs.is_occu_times;
+        occu_index = rhs.occu_index;
+        is_occu_index = rhs.is_occu_index;
+        occ_vec = rhs.occ_vec;
+        is_occ_vec = rhs.is_occ_vec;
+        transl = rhs.transl;
+        glob = rhs.glob;
+        rot = rhs.rot;
+        dyn = rhs.dyn;
+        last_depth_interps = rhs.last_depth_interps;
+        last_vecs = rhs.last_vecs;
+        last_positions = rhs.last_positions;
+        local = rhs.local;
+        is_distort = rhs.is_distort;
+        cur_vec = rhs.cur_vec;
+        last_closest = rhs.last_closest;
+        return *this;
+    }
 
     ~point_soph(){
     };
@@ -189,14 +219,14 @@ struct point_soph
     void reset()
     {
         occu_times = is_occu_times = 0;
-        occu_index = -1*Vector3i::Ones();
-        is_occu_index = -1*Vector3i::Ones();
+        occu_index = -1*Eigen::Vector3i::Ones();
+        is_occu_index = -1*Eigen::Vector3i::Ones();
         occ_vec.setZero();
         is_occ_vec.setZero();
         last_closest.setZero();
         last_depth_interps.fill(0.0);
         last_vecs.fill(V3F::Zero());
-        last_positions.fill(Vector3i::Zero());
+        last_positions.fill(Eigen::Vector3i::Zero());
         is_distort = false;
     };
 };
@@ -235,14 +265,14 @@ public:
         min_depth_all = new float[MAX_2D_N];
         max_depth_all = new float[MAX_2D_N];
         max_depth_static = new float[MAX_2D_N];
-        fill_n(min_depth_static, MAX_2D_N, 0.0);
-        fill_n(min_depth_all, MAX_2D_N, 0.0);
-        fill_n(max_depth_all, MAX_2D_N, 0.0);
-        fill_n(max_depth_static, MAX_2D_N, 0.0);
+        std::fill_n(min_depth_static, MAX_2D_N, 0.0);
+        std::fill_n(min_depth_all, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_all, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_static, MAX_2D_N, 0.0);
         max_depth_index_all = new int[MAX_2D_N];
         min_depth_index_all = new int[MAX_2D_N];
-        fill_n(min_depth_index_all, MAX_2D_N, -1);
-        fill_n(max_depth_index_all, MAX_2D_N, -1);
+        std::fill_n(min_depth_index_all, MAX_2D_N, -1);
+        std::fill_n(max_depth_index_all, MAX_2D_N, -1);
         map_index = -1;
         index_vector.assign(MAX_2D_N, 0);
         for (int i = 0; i < MAX_2D_N; i++) {
@@ -260,14 +290,14 @@ public:
         min_depth_all = new float[MAX_2D_N];
         max_depth_all = new float[MAX_2D_N];
         max_depth_static = new float[MAX_2D_N];
-        fill_n(min_depth_static, MAX_2D_N, 0.0);
-        fill_n(min_depth_all, MAX_2D_N, 0.0);
-        fill_n(max_depth_all, MAX_2D_N, 0.0);
-        fill_n(max_depth_static, MAX_2D_N, 0.0);
+        std::fill_n(min_depth_static, MAX_2D_N, 0.0);
+        std::fill_n(min_depth_all, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_all, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_static, MAX_2D_N, 0.0);
         max_depth_index_all = new int[MAX_2D_N];
         min_depth_index_all = new int[MAX_2D_N];
-        fill_n(min_depth_index_all, MAX_2D_N, -1);
-        fill_n(max_depth_index_all, MAX_2D_N, -1);
+        std::fill_n(min_depth_index_all, MAX_2D_N, -1);
+        std::fill_n(max_depth_index_all, MAX_2D_N, -1);
         map_index = frame;
         index_vector.assign(MAX_2D_N, 0);
         for (int i = 0; i < MAX_2D_N; i++) {
@@ -286,10 +316,10 @@ public:
         min_depth_all = new float[MAX_2D_N];
         max_depth_all = new float[MAX_2D_N];
         max_depth_static = new float[MAX_2D_N];   
-        fill_n(min_depth_static, MAX_2D_N, 0.0);
-        fill_n(min_depth_all, MAX_2D_N, 0.0);
-        fill_n(max_depth_all, MAX_2D_N, 0.0);
-        fill_n(max_depth_static, MAX_2D_N, 0.0);
+        std::fill_n(min_depth_static, MAX_2D_N, 0.0);
+        std::fill_n(min_depth_all, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_all, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_static, MAX_2D_N, 0.0);
         max_depth_index_all = new int[MAX_2D_N];       
         min_depth_index_all = new int[MAX_2D_N];
         map_index = cur.map_index;      
@@ -328,12 +358,12 @@ public:
         {
             depth_map[i].clear();
         });
-        fill_n(min_depth_static, MAX_2D_N, 0.0);
-        fill_n(min_depth_all, MAX_2D_N, 0.0);
-        fill_n(max_depth_all, MAX_2D_N, 0.0);
-        fill_n(max_depth_static, MAX_2D_N, 0.0);
-        fill_n(max_depth_index_all, MAX_2D_N, -1);
-        fill_n(min_depth_index_all, MAX_2D_N, -1);
+        std::fill_n(min_depth_static, MAX_2D_N, 0.0);
+        std::fill_n(min_depth_all, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_all, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_static, MAX_2D_N, 0.0);
+        std::fill_n(max_depth_index_all, MAX_2D_N, -1);
+        std::fill_n(min_depth_index_all, MAX_2D_N, -1);
     }
 
 };
@@ -564,21 +594,21 @@ public:
     int    max_pixel_points = 50;
     bool   stop_object_detect = false;
     point_soph::Ptr last_point_pointer = nullptr;
-    string frame_id = "camera_init";
+    std::string frame_id = "camera_init";
     double invalid_total = 0.0;
     double case1_total = 0.0;
     double case2_total = 0.0;
     double case3_total = 0.0;
     bool dyn_filter_en = true;
-    mutex mtx_case2, mtx_case3; 
+    std::mutex mtx_case2, mtx_case3; 
     std::vector<int> pos_offset;
     ros::Publisher demo_pcl_display;
-    string time_file;
-    ofstream time_out;
+    std::string time_file;
+    std::ofstream time_out;
 
     std::vector<double> time_test1, time_test2, time_test3, time_occ_check, time_map_cons, time_proj;
-    string time_breakdown_file;
-    ofstream time_breakdown_out;
+    std::string time_breakdown_file;
+    std::ofstream time_breakdown_out;
 
     DynObjFilter(){};
     DynObjFilter(float windows_dur, float hor_resolution, float ver_resolution)
@@ -592,7 +622,7 @@ public:
 
     void filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_end, const V3D & pos_end, const ros::Time& scan_end_time);
     void publish_dyn(const ros::Publisher & pub_point_out, const ros::Publisher & pub_frame_out, const ros::Publisher & pub_steady_points, const ros::Time& scan_end_time);
-    void set_path(string file_path, string file_path_origin);
+    void set_path(std::string file_path, std::string file_path_origin);
 
     std::vector<int> get_dyn_labels() const {
         return dyn_tag_cluster;
@@ -601,7 +631,7 @@ public:
         return dyn_tag_origin;
     }
 
-    void  Points2Buffer(vector<point_soph*> &points, std::vector<int> &index_vector);
+    void  Points2Buffer(std::vector<point_soph*> &points, std::vector<int> &index_vector);
     void  Buffer2DepthMap(double cur_time);
     void  SphericalProjection(point_soph &p, int depth_index, const M3D &rot, const V3D &transl, point_soph &p_spherical);
     bool  Case1(point_soph & p);
@@ -631,8 +661,8 @@ public:
 
 private:
     bool is_set_path = false;
-    string out_file;
-    string out_file_origin;
+    std::string out_file;
+    std::string out_file_origin;
 };
 
 #endif

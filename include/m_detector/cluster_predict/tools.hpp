@@ -7,7 +7,7 @@
 #include <pcl/point_types.h>
 
 #define HASH_P 116101
-#define MAX_N 10000000000
+// #define MAX_N 10000000000
 #define SKEW_SYM_MATRX(v) 0.0,-v[2],v[1],v[2],0.0,-v[0],-v[1],v[0],0.0
 #define PLM(a) vector<Eigen::Matrix<double, a, a>, Eigen::aligned_allocator<Eigen::Matrix<double, a, a>>>
 #define PLV(a) vector<Eigen::Matrix<double, a, 1>, Eigen::aligned_allocator<Eigen::Matrix<double, a, 1>>>
@@ -22,7 +22,7 @@
 // #define POINT_NOISE
 
 typedef pcl::PointXYZINormal PointType;
-using namespace std;
+// using namespace std;
 
 
 // class VOXEL_LOCATION
