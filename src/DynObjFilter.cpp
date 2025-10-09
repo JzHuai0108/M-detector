@@ -174,112 +174,141 @@ DynObjConfig loadDynObjConfigFromYaml(const std::string& path, DynObjConfig c)
   return c;
 }
 
-void  DynObjFilter::init(ros::NodeHandle& nh)
+void DynObjFilter::init(ros::NodeHandle& nh) 
 {
-    DynObjConfig c;
-    nh.param<double>("dyn_obj/buffer_delay", buffer_delay, 0.1);
-    nh.param<int>("dyn_obj/buffer_size", buffer_size, 300000);
-    nh.param<int>("dyn_obj/points_num_perframe", points_num_perframe, 150000);
-    nh.param<double>("dyn_obj/depth_map_dur", depth_map_dur, 0.2);
-    nh.param<int>("dyn_obj/max_depth_map_num", max_depth_map_num, 5);
-    nh.param<int>("dyn_obj/max_pixel_points", max_pixel_points, 50);
-    nh.param<double>("dyn_obj/frame_dur", frame_dur, 0.1);
-    nh.param<int>("dyn_obj/dataset", dataset, 0);
-    nh.param<float>("dyn_obj/self_x_f", self_x_f, 0.15f);
-    nh.param<float>("dyn_obj/self_x_b", self_x_b, 0.15f);
-    nh.param<float>("dyn_obj/self_y_l", self_y_l, 0.15f);
-    nh.param<float>("dyn_obj/self_y_r", self_y_r, 0.5f);
-    nh.param<float>("dyn_obj/blind_dis", blind_dis, 0.15f);
-    nh.param<float>("dyn_obj/fov_up", fov_up, 0.15f);
-    nh.param<float>("dyn_obj/fov_down", fov_down, 0.15f);
-    nh.param<float>("dyn_obj/fov_cut", fov_cut, 0.15f);
-    nh.param<float>("dyn_obj/fov_left", fov_left, 180.0f);
-    nh.param<float>("dyn_obj/fov_right", fov_right, -180.0f);
-    nh.param<int>("dyn_obj/checkneighbor_range", checkneighbor_range, 1);
-    nh.param<bool>("dyn_obj/stop_object_detect", stop_object_detect, false);
-    nh.param<float>("dyn_obj/depth_thr1", depth_thr1, 0.15f);
-    nh.param<float>("dyn_obj/enter_min_thr1", enter_min_thr1, 0.15f);
-    nh.param<float>("dyn_obj/enter_max_thr1", enter_max_thr1, 0.15f);
-    nh.param<float>("dyn_obj/map_cons_depth_thr1", map_cons_depth_thr1, 0.5f);
-    nh.param<float>("dyn_obj/map_cons_hor_thr1", map_cons_hor_thr1, 0.01f);
-    nh.param<float>("dyn_obj/map_cons_ver_thr1", map_cons_ver_thr1, 0.01f);
-    nh.param<float>("dyn_obj/map_cons_hor_dis1", map_cons_hor_dis1, 0.2f);
-    nh.param<float>("dyn_obj/map_cons_ver_dis1", map_cons_ver_dis1, 0.1f);
-    nh.param<float>("dyn_obj/depth_cons_depth_thr1", depth_cons_depth_thr1, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_depth_max_thr1", depth_cons_depth_max_thr1, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_hor_thr1", depth_cons_hor_thr1, 0.02f);
-    nh.param<float>("dyn_obj/depth_cons_ver_thr1", depth_cons_ver_thr1, 0.01f);
-    nh.param<float>("dyn_obj/enlarge_z_thr1", enlarge_z_thr1, 0.05f);
-    nh.param<float>("dyn_obj/enlarge_angle", enlarge_angle, 2.0f);
-    nh.param<float>("dyn_obj/enlarge_depth", enlarge_depth, 3.0f);
-    nh.param<int>("dyn_obj/occluded_map_thr1", occluded_map_thr1, 3);
-    nh.param<bool>("dyn_obj/case1_interp_en", case1_interp_en, false);
-    nh.param<float>("dyn_obj/k_depth_min_thr1", k_depth_min_thr1, 0.0f);
-    nh.param<float>("dyn_obj/d_depth_min_thr1", d_depth_min_thr1, 0.15f);
-    nh.param<float>("dyn_obj/k_depth_max_thr1", k_depth_max_thr1, 0.0f);
-    nh.param<float>("dyn_obj/d_depth_max_thr1", d_depth_max_thr1, 0.15f);
-    nh.param<float>("dyn_obj/v_min_thr2", v_min_thr2, 0.5f);
-    nh.param<float>("dyn_obj/acc_thr2", acc_thr2, 1.0f);
-    nh.param<float>("dyn_obj/map_cons_depth_thr2", map_cons_depth_thr2, 0.15f);
-    nh.param<float>("dyn_obj/map_cons_hor_thr2", map_cons_hor_thr2, 0.02f);
-    nh.param<float>("dyn_obj/map_cons_ver_thr2", map_cons_ver_thr2, 0.01f);
-    nh.param<float>("dyn_obj/occ_depth_thr2", occ_depth_thr2, 0.15f);
-    nh.param<float>("dyn_obj/occ_hor_thr2", occ_hor_thr2, 0.02f);
-    nh.param<float>("dyn_obj/occ_ver_thr2", occ_ver_thr2, 0.01f);
-    nh.param<float>("dyn_obj/depth_cons_depth_thr2", depth_cons_depth_thr2, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_depth_max_thr2", depth_cons_depth_max_thr2, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_hor_thr2", depth_cons_hor_thr2, 0.02f);
-    nh.param<float>("dyn_obj/depth_cons_ver_thr2", depth_cons_ver_thr2, 0.01f);
-    nh.param<float>("dyn_obj/k_depth2", k_depth2, 0.005f);
-    nh.param<int>("dyn_obj/occluded_times_thr2", occluded_times_thr2, 3);
-    nh.param<bool>("dyn_obj/case2_interp_en", case2_interp_en, false);
-    nh.param<float>("dyn_obj/k_depth_max_thr2", k_depth_max_thr2, 0.0f);
-    nh.param<float>("dyn_obj/d_depth_max_thr2", d_depth_max_thr2, 0.15f);
-    nh.param<float>("dyn_obj/v_min_thr3", v_min_thr3, 0.5f);
-    nh.param<float>("dyn_obj/acc_thr3", acc_thr3, 1.0f);
-    nh.param<float>("dyn_obj/map_cons_depth_thr3", map_cons_depth_thr3, 0.15f);
-    nh.param<float>("dyn_obj/map_cons_hor_thr3", map_cons_hor_thr3, 0.02f);
-    nh.param<float>("dyn_obj/map_cons_ver_thr3", map_cons_ver_thr3, 0.01f);
-    nh.param<float>("dyn_obj/occ_depth_thr3", occ_depth_thr3, 0.15f);
-    nh.param<float>("dyn_obj/occ_hor_thr3", occ_hor_thr3, 0.02f);
-    nh.param<float>("dyn_obj/occ_ver_thr3", occ_ver_thr3, 0.01f);
-    nh.param<float>("dyn_obj/depth_cons_depth_thr3", depth_cons_depth_thr3, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_depth_max_thr3", depth_cons_depth_max_thr3, 0.5f);
-    nh.param<float>("dyn_obj/depth_cons_hor_thr3", depth_cons_hor_thr3, 0.02f);
-    nh.param<float>("dyn_obj/depth_cons_ver_thr3", depth_cons_ver_thr3, 0.01f);
-    nh.param<float>("dyn_obj/k_depth3", k_depth3, 0.005f);
-    nh.param<int>("dyn_obj/occluding_times_thr3", occluding_times_thr3, 3);
-    nh.param<bool>("dyn_obj/case3_interp_en", case3_interp_en, false);
-    nh.param<float>("dyn_obj/k_depth_max_thr3", k_depth_max_thr3, 0.0f);
-    nh.param<float>("dyn_obj/d_depth_max_thr3", d_depth_max_thr3, 0.15f);
-    nh.param<float>("dyn_obj/interp_hor_thr", interp_hor_thr, 0.01f);
-    nh.param<float>("dyn_obj/interp_ver_thr", interp_ver_thr, 0.01f);
-    nh.param<float>("dyn_obj/interp_thr1", interp_thr1, 1.0f);
-    nh.param<float>("dyn_obj/interp_static_max", interp_static_max, 10.0f);
-    nh.param<float>("dyn_obj/interp_start_depth1", interp_start_depth1, 20.0f);
-    nh.param<float>("dyn_obj/interp_kp1", interp_kp1, 0.1f);
-    nh.param<float>("dyn_obj/interp_kd1", interp_kd1, 1.0f);
-    nh.param<float>("dyn_obj/interp_thr2", interp_thr2, 0.15f);
-    nh.param<float>("dyn_obj/interp_thr3", interp_thr3, 0.15f);
-    nh.param<bool>("dyn_obj/dyn_filter_en", dyn_filter_en, true);
-    nh.param<bool>("dyn_obj/debug_publish", debug_en, true);
-    nh.param<int>("dyn_obj/laserCloudSteadObj_accu_limit", laserCloudSteadObj_accu_limit, 5);
-    nh.param<float>("dyn_obj/voxel_filter_size", voxel_filter_size, 0.1f);
-    nh.param<bool>("dyn_obj/cluster_coupled", cluster_coupled, false);
-    nh.param<bool>("dyn_obj/cluster_future", cluster_future, false);
-    nh.param<int>("dyn_obj/cluster_extend_pixel", Cluster.cluster_extend_pixel, 2);
-    nh.param<int>("dyn_obj/cluster_min_pixel_number", Cluster.cluster_min_pixel_number, 4);
-    nh.param<float>("dyn_obj/cluster_thrustable_thresold", Cluster.thrustable_thresold, 0.3f);
-    nh.param<float>("dyn_obj/cluster_Voxel_revolusion", Cluster.Voxel_revolusion, 0.3f);
-    nh.param<bool>("dyn_obj/cluster_debug_en", Cluster.debug_en, false);
-    nh.param<std::string>("dyn_obj/cluster_out_file", Cluster.out_file, "");
-    nh.param<float>("dyn_obj/ver_resolution_max", ver_resolution_max, 0.0025f);
-    nh.param<float>("dyn_obj/hor_resolution_max", hor_resolution_max, 0.0025f);
-    nh.param<float>("dyn_obj/buffer_dur", buffer_dur, 0.1f);
-    nh.param<int>("dyn_obj/point_index", point_index, 0);
-    nh.param<std::string>("dyn_obj/frame_id", frame_id, "camera_init");
-    nh.param<std::string>("dyn_obj/time_file", time_file, "");
-    nh.param<std::string>("dyn_obj/time_breakdown_file",time_breakdown_file, "");
+    DynObjConfig c;  // has sane defaults
+
+    nh.param<double>("dyn_obj/buffer_delay", c.buffer_delay, c.buffer_delay);
+    nh.param<int>("dyn_obj/buffer_size", c.buffer_size, c.buffer_size);
+    nh.param<int>("dyn_obj/points_num_perframe", c.points_num_perframe, c.points_num_perframe);
+    nh.param<double>("dyn_obj/depth_map_dur", c.depth_map_dur, c.depth_map_dur);
+    nh.param<int>("dyn_obj/max_depth_map_num", c.max_depth_map_num, c.max_depth_map_num);
+    nh.param<int>("dyn_obj/max_pixel_points", c.max_pixel_points, c.max_pixel_points);
+    nh.param<double>("dyn_obj/frame_dur", c.frame_dur, c.frame_dur);
+    nh.param<int>("dyn_obj/dataset", c.dataset, c.dataset);
+
+    nh.param<float>("dyn_obj/self_x_f", c.self_x_f, c.self_x_f);
+    nh.param<float>("dyn_obj/self_x_b", c.self_x_b, c.self_x_b);
+    nh.param<float>("dyn_obj/self_y_l", c.self_y_l, c.self_y_l);
+    nh.param<float>("dyn_obj/self_y_r", c.self_y_r, c.self_y_r);
+    nh.param<float>("dyn_obj/blind_dis", c.blind_dis, c.blind_dis);
+
+    nh.param<float>("dyn_obj/fov_up", c.fov_up, c.fov_up);
+    nh.param<float>("dyn_obj/fov_down", c.fov_down, c.fov_down);
+    nh.param<float>("dyn_obj/fov_cut", c.fov_cut, c.fov_cut);
+    nh.param<float>("dyn_obj/fov_left", c.fov_left, c.fov_left);
+    nh.param<float>("dyn_obj/fov_right", c.fov_right, c.fov_right);
+
+    nh.param<int>("dyn_obj/checkneighbor_range", c.checkneighbor_range, c.checkneighbor_range);
+    nh.param<bool>("dyn_obj/stop_object_detect", c.stop_object_detect, c.stop_object_detect);
+
+    nh.param<float>("dyn_obj/depth_thr1", c.depth_thr1, c.depth_thr1);
+    nh.param<float>("dyn_obj/enter_min_thr1", c.enter_min_thr1, c.enter_min_thr1);
+    nh.param<float>("dyn_obj/enter_max_thr1", c.enter_max_thr1, c.enter_max_thr1);
+
+    nh.param<float>("dyn_obj/map_cons_depth_thr1", c.map_cons_depth_thr1, c.map_cons_depth_thr1);
+    nh.param<float>("dyn_obj/map_cons_hor_thr1",   c.map_cons_hor_thr1,   c.map_cons_hor_thr1);
+    nh.param<float>("dyn_obj/map_cons_ver_thr1",   c.map_cons_ver_thr1,   c.map_cons_ver_thr1);
+    nh.param<float>("dyn_obj/map_cons_hor_dis1",   c.map_cons_hor_dis1,   c.map_cons_hor_dis1);
+    nh.param<float>("dyn_obj/map_cons_ver_dis1",   c.map_cons_ver_dis1,   c.map_cons_ver_dis1);
+
+    nh.param<float>("dyn_obj/depth_cons_depth_thr1",     c.depth_cons_depth_thr1,     c.depth_cons_depth_thr1);
+    nh.param<float>("dyn_obj/depth_cons_depth_max_thr1", c.depth_cons_depth_max_thr1, c.depth_cons_depth_max_thr1);
+    nh.param<float>("dyn_obj/depth_cons_hor_thr1",       c.depth_cons_hor_thr1,       c.depth_cons_hor_thr1);
+    nh.param<float>("dyn_obj/depth_cons_ver_thr1",       c.depth_cons_ver_thr1,       c.depth_cons_ver_thr1);
+
+    nh.param<float>("dyn_obj/enlarge_z_thr1", c.enlarge_z_thr1, c.enlarge_z_thr1);
+    nh.param<float>("dyn_obj/enlarge_angle",  c.enlarge_angle,  c.enlarge_angle);
+    nh.param<float>("dyn_obj/enlarge_depth",  c.enlarge_depth,  c.enlarge_depth);
+
+    nh.param<int>("dyn_obj/occluded_map_thr1", c.occluded_map_thr1, c.occluded_map_thr1);
+    nh.param<bool>("dyn_obj/case1_interp_en",  c.case1_interp_en,   c.case1_interp_en);
+
+    nh.param<float>("dyn_obj/k_depth_min_thr1", c.k_depth_min_thr1, c.k_depth_min_thr1);
+    nh.param<float>("dyn_obj/d_depth_min_thr1", c.d_depth_min_thr1, c.d_depth_min_thr1);
+    nh.param<float>("dyn_obj/k_depth_max_thr1", c.k_depth_max_thr1, c.k_depth_max_thr1);
+    nh.param<float>("dyn_obj/d_depth_max_thr1", c.d_depth_max_thr1, c.d_depth_max_thr1);
+
+    nh.param<float>("dyn_obj/v_min_thr2", c.v_min_thr2, c.v_min_thr2);
+    nh.param<float>("dyn_obj/acc_thr2",   c.acc_thr2,   c.acc_thr2);
+
+    nh.param<float>("dyn_obj/map_cons_depth_thr2", c.map_cons_depth_thr2, c.map_cons_depth_thr2);
+    nh.param<float>("dyn_obj/map_cons_hor_thr2",   c.map_cons_hor_thr2,   c.map_cons_hor_thr2);
+    nh.param<float>("dyn_obj/map_cons_ver_thr2",   c.map_cons_ver_thr2,   c.map_cons_ver_thr2);
+
+    nh.param<float>("dyn_obj/occ_depth_thr2", c.occ_depth_thr2, c.occ_depth_thr2);
+    nh.param<float>("dyn_obj/occ_hor_thr2",   c.occ_hor_thr2,   c.occ_hor_thr2);
+    nh.param<float>("dyn_obj/occ_ver_thr2",   c.occ_ver_thr2,   c.occ_ver_thr2);
+
+    nh.param<float>("dyn_obj/depth_cons_depth_thr2",     c.depth_cons_depth_thr2,     c.depth_cons_depth_thr2);
+    nh.param<float>("dyn_obj/depth_cons_depth_max_thr2", c.depth_cons_depth_max_thr2, c.depth_cons_depth_max_thr2);
+    nh.param<float>("dyn_obj/depth_cons_hor_thr2",       c.depth_cons_hor_thr2,       c.depth_cons_hor_thr2);
+    nh.param<float>("dyn_obj/depth_cons_ver_thr2",       c.depth_cons_ver_thr2,       c.depth_cons_ver_thr2);
+
+    nh.param<float>("dyn_obj/k_depth2",            c.k_depth2,            c.k_depth2);
+    nh.param<int>("dyn_obj/occluded_times_thr2",   c.occluded_times_thr2, c.occluded_times_thr2);
+    nh.param<bool>("dyn_obj/case2_interp_en",      c.case2_interp_en,     c.case2_interp_en);
+    nh.param<float>("dyn_obj/k_depth_max_thr2",    c.k_depth_max_thr2,    c.k_depth_max_thr2);
+    nh.param<float>("dyn_obj/d_depth_max_thr2",    c.d_depth_max_thr2,    c.d_depth_max_thr2);
+
+    nh.param<float>("dyn_obj/v_min_thr3", c.v_min_thr3, c.v_min_thr3);
+    nh.param<float>("dyn_obj/acc_thr3",   c.acc_thr3,   c.acc_thr3);
+
+    nh.param<float>("dyn_obj/map_cons_depth_thr3", c.map_cons_depth_thr3, c.map_cons_depth_thr3);
+    nh.param<float>("dyn_obj/map_cons_hor_thr3",   c.map_cons_hor_thr3,   c.map_cons_hor_thr3);
+    nh.param<float>("dyn_obj/map_cons_ver_thr3",   c.map_cons_ver_thr3,   c.map_cons_ver_thr3);
+
+    nh.param<float>("dyn_obj/occ_depth_thr3", c.occ_depth_thr3, c.occ_depth_thr3);
+    nh.param<float>("dyn_obj/occ_hor_thr3",   c.occ_hor_thr3,   c.occ_hor_thr3);
+    nh.param<float>("dyn_obj/occ_ver_thr3",   c.occ_ver_thr3,   c.occ_ver_thr3);
+
+    nh.param<float>("dyn_obj/depth_cons_depth_thr3",     c.depth_cons_depth_thr3,     c.depth_cons_depth_thr3);
+    nh.param<float>("dyn_obj/depth_cons_depth_max_thr3", c.depth_cons_depth_max_thr3, c.depth_cons_depth_max_thr3);
+    nh.param<float>("dyn_obj/depth_cons_hor_thr3",       c.depth_cons_hor_thr3,       c.depth_cons_hor_thr3);
+    nh.param<float>("dyn_obj/depth_cons_ver_thr3",       c.depth_cons_ver_thr3,       c.depth_cons_ver_thr3);
+
+    nh.param<float>("dyn_obj/k_depth3",            c.k_depth3,            c.k_depth3);
+    nh.param<int>("dyn_obj/occluding_times_thr3",  c.occluding_times_thr3, c.occluding_times_thr3);
+    nh.param<bool>("dyn_obj/case3_interp_en",      c.case3_interp_en,     c.case3_interp_en);
+    nh.param<float>("dyn_obj/k_depth_max_thr3",    c.k_depth_max_thr3,    c.k_depth_max_thr3);
+    nh.param<float>("dyn_obj/d_depth_max_thr3",    c.d_depth_max_thr3,    c.d_depth_max_thr3);
+
+    nh.param<float>("dyn_obj/interp_hor_thr", c.interp_hor_thr, c.interp_hor_thr);
+    nh.param<float>("dyn_obj/interp_ver_thr", c.interp_ver_thr, c.interp_ver_thr);
+    nh.param<float>("dyn_obj/interp_thr1",    c.interp_thr1,    c.interp_thr1);
+    nh.param<float>("dyn_obj/interp_static_max",   c.interp_static_max,   c.interp_static_max);
+    nh.param<float>("dyn_obj/interp_start_depth1", c.interp_start_depth1, c.interp_start_depth1);
+    nh.param<float>("dyn_obj/interp_kp1",     c.interp_kp1,     c.interp_kp1);
+    nh.param<float>("dyn_obj/interp_kd1",     c.interp_kd1,     c.interp_kd1);
+    nh.param<float>("dyn_obj/interp_thr2",    c.interp_thr2,    c.interp_thr2);
+    nh.param<float>("dyn_obj/interp_thr3",    c.interp_thr3,    c.interp_thr3);
+
+    nh.param<bool>("dyn_obj/dyn_filter_en", c.dyn_filter_en, c.dyn_filter_en);
+    nh.param<bool>("dyn_obj/debug_publish", c.debug_publish, c.debug_publish);
+
+    nh.param<int>("dyn_obj/laserCloudSteadObj_accu_limit", c.laserCloudSteadObj_accu_limit, c.laserCloudSteadObj_accu_limit);
+    nh.param<float>("dyn_obj/voxel_filter_size",           c.voxel_filter_size,             c.voxel_filter_size);
+
+    nh.param<bool>("dyn_obj/cluster_coupled", c.cluster_coupled, c.cluster_coupled);
+    nh.param<bool>("dyn_obj/cluster_future",  c.cluster_future,  c.cluster_future);
+    nh.param<int>("dyn_obj/cluster_extend_pixel",     c.cluster_extend_pixel,     c.cluster_extend_pixel);
+    nh.param<int>("dyn_obj/cluster_min_pixel_number", c.cluster_min_pixel_number, c.cluster_min_pixel_number);
+    nh.param<float>("dyn_obj/cluster_thrustable_thresold", c.cluster_thrustable_thresold, c.cluster_thrustable_thresold);
+    nh.param<float>("dyn_obj/cluster_Voxel_revolusion",    c.cluster_Voxel_revolusion,    c.cluster_Voxel_revolusion);
+    nh.param<bool>("dyn_obj/cluster_debug_en",             c.cluster_debug_en,            c.cluster_debug_en);
+    nh.param<std::string>("dyn_obj/cluster_out_file",      c.cluster_out_file,            c.cluster_out_file);
+
+    // ✅ fixed: read into the correct variables
+    nh.param<float>("dyn_obj/ver_resolution_max", c.ver_resolution_max, c.ver_resolution_max);
+    nh.param<float>("dyn_obj/hor_resolution_max", c.hor_resolution_max, c.hor_resolution_max);
+
+    nh.param<float>("dyn_obj/buffer_dur", c.buffer_dur, c.buffer_dur);
+    nh.param<int>("dyn_obj/point_index",  c.point_index, c.point_index);
+    nh.param<std::string>("dyn_obj/frame_id", c.frame_id, c.frame_id);
+    nh.param<std::string>("dyn_obj/time_file", c.time_file, c.time_file);
+    nh.param<std::string>("dyn_obj/time_breakdown_file", c.time_breakdown_file, c.time_breakdown_file);
+
+    // Apply once
     initFromConfig(c);
 }
 
