@@ -19,7 +19,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <Eigen/LU>
-#include <m-detector/DynObjCluster.h>
+#include <m_detector/DynObjCluster.h>
 #include <parallel_q.h>
 #include <algorithm>
 #include <chrono>
@@ -335,6 +335,152 @@ public:
 
 };
 
+struct DynObjConfig {
+  // --- order identical to init(nh) ---
+
+  // 1) core sizes/timing/dataset
+  double buffer_delay = 0.1;
+  int    buffer_size = 300000;
+  int    points_num_perframe = 150000;
+  double depth_map_dur = 0.2;
+  int    max_depth_map_num = 5;
+  int    max_pixel_points = 50;
+  double frame_dur = 0.1;
+  int    dataset = 0;
+
+  // 2) ego dims & blind zone
+  float self_x_f = 0.15f;
+  float self_x_b = 0.15f;
+  float self_y_l = 0.15f;
+  float self_y_r = 0.5f;
+  float blind_dis = 0.15f;
+
+  // 3) FOVs
+  float fov_up = 0.15f;
+  float fov_down = 0.15f;
+  float fov_cut = 0.15f;
+  float fov_left = 180.0f;
+  float fov_right = -180.0f;
+
+  // 4) neighbor & stop flag
+  int  checkneighbor_range = 1;
+  bool stop_object_detect = false;
+
+  // 5) case1 thresholds
+  float depth_thr1 = 0.15f;
+  float enter_min_thr1 = 0.15f;
+  float enter_max_thr1 = 0.15f;
+
+  float map_cons_depth_thr1 = 0.5f;
+  float map_cons_hor_thr1   = 0.01f;
+  float map_cons_ver_thr1   = 0.01f;
+  float map_cons_hor_dis1   = 0.2f;
+  float map_cons_ver_dis1   = 0.1f;
+
+  float depth_cons_depth_thr1     = 0.5f;
+  float depth_cons_depth_max_thr1 = 0.5f;
+  float depth_cons_hor_thr1       = 0.02f;
+  float depth_cons_ver_thr1       = 0.01f;
+
+  float enlarge_z_thr1 = 0.05f;
+  float enlarge_angle  = 2.0f;
+  float enlarge_depth  = 3.0f;
+
+  int  occluded_map_thr1 = 3;
+  bool case1_interp_en   = false;
+
+  float k_depth_min_thr1 = 0.0f;
+  float d_depth_min_thr1 = 0.15f;
+  float k_depth_max_thr1 = 0.0f;
+  float d_depth_max_thr1 = 0.15f;
+
+  // 6) case2 thresholds
+  float v_min_thr2 = 0.5f;
+  float acc_thr2   = 1.0f;
+
+  float map_cons_depth_thr2 = 0.15f;
+  float map_cons_hor_thr2   = 0.02f;
+  float map_cons_ver_thr2   = 0.01f;
+
+  float occ_depth_thr2 = 0.15f;
+  float occ_hor_thr2   = 0.02f;
+  float occ_ver_thr2   = 0.01f;
+
+  float depth_cons_depth_thr2     = 0.5f;
+  float depth_cons_depth_max_thr2 = 0.5f;
+  float depth_cons_hor_thr2       = 0.02f;
+  float depth_cons_ver_thr2       = 0.01f;
+
+  float k_depth2 = 0.005f;
+  int   occluded_times_thr2 = 3;
+  bool  case2_interp_en = false;
+  float k_depth_max_thr2 = 0.0f;
+  float d_depth_max_thr2 = 0.15f;
+
+  // 7) case3 thresholds
+  float v_min_thr3 = 0.5f;
+  float acc_thr3   = 1.0f;
+
+  float map_cons_depth_thr3 = 0.15f;
+  float map_cons_hor_thr3   = 0.02f;
+  float map_cons_ver_thr3   = 0.01f;
+
+  float occ_depth_thr3 = 0.15f;
+  float occ_hor_thr3   = 0.02f;
+  float occ_ver_thr3   = 0.01f;
+
+  float depth_cons_depth_thr3     = 0.5f;
+  float depth_cons_depth_max_thr3 = 0.5f;
+  float depth_cons_hor_thr3       = 0.02f;
+  float depth_cons_ver_thr3       = 0.01f;
+
+  float k_depth3 = 0.005f;
+  int   occluding_times_thr3 = 3;
+  bool  case3_interp_en = false;
+  float k_depth_max_thr3 = 0.0f;
+  float d_depth_max_thr3 = 0.15f;
+
+  // 8) interpolation
+  float interp_hor_thr = 0.01f;
+  float interp_ver_thr = 0.01f;
+  float interp_thr1    = 1.0f;
+  float interp_static_max    = 10.0f;
+  float interp_start_depth1  = 20.0f;
+  float interp_kp1    = 0.1f;
+  float interp_kd1    = 1.0f;
+  float interp_thr2   = 0.15f;
+  float interp_thr3   = 0.15f;
+
+  // 9) toggles
+  bool dyn_filter_en = true;
+  bool debug_publish = true;
+
+  // 10) accumulators / voxel
+  int   laserCloudSteadObj_accu_limit = 5;
+  float voxel_filter_size = 0.1f;
+
+  // 11) clustering
+  bool  cluster_coupled = false;
+  bool  cluster_future  = false;
+  int   cluster_extend_pixel = 2;
+  int   cluster_min_pixel_number = 4;
+  float cluster_thrustable_thresold = 0.3f;
+  float cluster_Voxel_revolusion    = 0.3f;
+  bool  cluster_debug_en = false;
+  std::string cluster_out_file = "";
+
+  // 12) resolutions
+  float ver_resolution_max = 0.0025f;
+  float hor_resolution_max = 0.0025f;
+
+  // 13) misc / I/O
+  float buffer_dur  = 0.1f;
+  int   point_index = 0;
+  std::string frame_id = "camera_init";
+  std::string time_file = "";
+  std::string time_breakdown_file = "";
+};
+
 
 class DynObjFilter 
 {
@@ -438,9 +584,19 @@ public:
     ~DynObjFilter(){};
 
     void init(ros::NodeHandle& nh);
+    void init(const std::string& config_yaml_path);
+    void initFromConfig(const DynObjConfig& c);
+
     void filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_end, const V3D & pos_end, const ros::Time& scan_end_time);
     void publish_dyn(const ros::Publisher & pub_point_out, const ros::Publisher & pub_frame_out, const ros::Publisher & pub_steady_points, const ros::Time& scan_end_time);
     void set_path(string file_path, string file_path_origin);
+
+    std::vector<int> get_dyn_labels() const {
+        return dyn_tag_cluster;
+    }
+    std::vector<int> get_dyn_labels_orig() const {
+        return dyn_tag_origin;
+    }
 
     void  Points2Buffer(vector<point_soph*> &points, std::vector<int> &index_vector);
     void  Buffer2DepthMap(double cur_time);

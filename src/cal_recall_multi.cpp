@@ -7,7 +7,7 @@
 #include <csignal>
 #include <unistd.h>
 
-#include <m-detector/DynObjFilter.h>
+#include <m_detector/DynObjFilter.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <pcl_conversions/pcl_conversions.h>

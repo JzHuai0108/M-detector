@@ -1,16 +1,182 @@
 #include <iostream>
 #include <vector>
 #include <random>
-#include <m-detector/DynObjFilter.h>
+#include <m_detector/DynObjFilter.h>
 // #include <algorithm>
 // #include <chrono>
 // #include <execution>
 
 // #define PI_MATH  (3.14159f)
 
+#include <yaml-cpp/yaml.h>
+
+// helpers
+inline double yd(const YAML::Node& n, const char* key, double defv) {
+  return n[key] ? n[key].as<double>() : defv;
+}
+inline float yf(const YAML::Node& n, const char* key, float defv) {
+  return n[key] ? n[key].as<float>() : defv;
+}
+inline int yi(const YAML::Node& n, const char* key, int defv) {
+  return n[key] ? n[key].as<int>() : defv;
+}
+inline bool yb(const YAML::Node& n, const char* key, bool defv) {
+  return n[key] ? n[key].as<bool>() : defv;
+}
+inline std::string ys(const YAML::Node& n, const char* key, const std::string& defv) {
+  return n[key] ? n[key].as<std::string>() : defv;
+}
+
+// ---------------------------------------------------------------------------
+// Load DynObjConfig from YAML (keys are under "dyn_obj:" or flat form)
+// order matches init(nh)
+// ---------------------------------------------------------------------------
+DynObjConfig loadDynObjConfigFromYaml(const std::string& path, DynObjConfig c)
+{
+  try {
+    YAML::Node root = YAML::LoadFile(path);
+    const YAML::Node node = root["dyn_obj"] ? root["dyn_obj"] : root;
+
+    // --- order identical to init(nh) ---
+    c.buffer_delay       = yd(node, "buffer_delay", c.buffer_delay);
+    c.buffer_size        = yi(node, "buffer_size", c.buffer_size);
+    c.points_num_perframe= yi(node, "points_num_perframe", c.points_num_perframe);
+    c.depth_map_dur      = yd(node, "depth_map_dur", c.depth_map_dur);
+    c.max_depth_map_num  = yi(node, "max_depth_map_num", c.max_depth_map_num);
+    c.max_pixel_points   = yi(node, "max_pixel_points", c.max_pixel_points);
+    c.frame_dur          = yd(node, "frame_dur", c.frame_dur);
+    c.dataset            = yi(node, "dataset", c.dataset);
+
+    c.self_x_f = yf(node,"self_x_f",c.self_x_f);
+    c.self_x_b = yf(node,"self_x_b",c.self_x_b);
+    c.self_y_l = yf(node,"self_y_l",c.self_y_l);
+    c.self_y_r = yf(node,"self_y_r",c.self_y_r);
+    c.blind_dis= yf(node,"blind_dis",c.blind_dis);
+
+    c.fov_up   = yf(node,"fov_up",c.fov_up);
+    c.fov_down = yf(node,"fov_down",c.fov_down);
+    c.fov_cut  = yf(node,"fov_cut",c.fov_cut);
+    c.fov_left = yf(node,"fov_left",c.fov_left);
+    c.fov_right= yf(node,"fov_right",c.fov_right);
+
+    c.checkneighbor_range = yi(node,"checkneighbor_range",c.checkneighbor_range);
+    c.stop_object_detect  = yb(node,"stop_object_detect",c.stop_object_detect);
+
+    c.depth_thr1 = yf(node,"depth_thr1",c.depth_thr1);
+    c.enter_min_thr1 = yf(node,"enter_min_thr1",c.enter_min_thr1);
+    c.enter_max_thr1 = yf(node,"enter_max_thr1",c.enter_max_thr1);
+
+    c.map_cons_depth_thr1 = yf(node,"map_cons_depth_thr1",c.map_cons_depth_thr1);
+    c.map_cons_hor_thr1   = yf(node,"map_cons_hor_thr1",c.map_cons_hor_thr1);
+    c.map_cons_ver_thr1   = yf(node,"map_cons_ver_thr1",c.map_cons_ver_thr1);
+    c.map_cons_hor_dis1   = yf(node,"map_cons_hor_dis1",c.map_cons_hor_dis1);
+    c.map_cons_ver_dis1   = yf(node,"map_cons_ver_dis1",c.map_cons_ver_dis1);
+
+    c.depth_cons_depth_thr1     = yf(node,"depth_cons_depth_thr1",c.depth_cons_depth_thr1);
+    c.depth_cons_depth_max_thr1 = yf(node,"depth_cons_depth_max_thr1",c.depth_cons_depth_max_thr1);
+    c.depth_cons_hor_thr1       = yf(node,"depth_cons_hor_thr1",c.depth_cons_hor_thr1);
+    c.depth_cons_ver_thr1       = yf(node,"depth_cons_ver_thr1",c.depth_cons_ver_thr1);
+
+    c.enlarge_z_thr1 = yf(node,"enlarge_z_thr1",c.enlarge_z_thr1);
+    c.enlarge_angle  = yf(node,"enlarge_angle",c.enlarge_angle);
+    c.enlarge_depth  = yf(node,"enlarge_depth",c.enlarge_depth);
+
+    c.occluded_map_thr1 = yi(node,"occluded_map_thr1",c.occluded_map_thr1);
+    c.case1_interp_en   = yb(node,"case1_interp_en",c.case1_interp_en);
+
+    c.k_depth_min_thr1 = yf(node,"k_depth_min_thr1",c.k_depth_min_thr1);
+    c.d_depth_min_thr1 = yf(node,"d_depth_min_thr1",c.d_depth_min_thr1);
+    c.k_depth_max_thr1 = yf(node,"k_depth_max_thr1",c.k_depth_max_thr1);
+    c.d_depth_max_thr1 = yf(node,"d_depth_max_thr1",c.d_depth_max_thr1);
+
+    c.v_min_thr2 = yf(node,"v_min_thr2",c.v_min_thr2);
+    c.acc_thr2   = yf(node,"acc_thr2",c.acc_thr2);
+
+    c.map_cons_depth_thr2 = yf(node,"map_cons_depth_thr2",c.map_cons_depth_thr2);
+    c.map_cons_hor_thr2   = yf(node,"map_cons_hor_thr2",c.map_cons_hor_thr2);
+    c.map_cons_ver_thr2   = yf(node,"map_cons_ver_thr2",c.map_cons_ver_thr2);
+
+    c.occ_depth_thr2 = yf(node,"occ_depth_thr2",c.occ_depth_thr2);
+    c.occ_hor_thr2   = yf(node,"occ_hor_thr2",c.occ_hor_thr2);
+    c.occ_ver_thr2   = yf(node,"occ_ver_thr2",c.occ_ver_thr2);
+
+    c.depth_cons_depth_thr2     = yf(node,"depth_cons_depth_thr2",c.depth_cons_depth_thr2);
+    c.depth_cons_depth_max_thr2 = yf(node,"depth_cons_depth_max_thr2",c.depth_cons_depth_max_thr2);
+    c.depth_cons_hor_thr2       = yf(node,"depth_cons_hor_thr2",c.depth_cons_hor_thr2);
+    c.depth_cons_ver_thr2       = yf(node,"depth_cons_ver_thr2",c.depth_cons_ver_thr2);
+
+    c.k_depth2            = yf(node,"k_depth2",c.k_depth2);
+    c.occluded_times_thr2 = yi(node,"occluded_times_thr2",c.occluded_times_thr2);
+    c.case2_interp_en     = yb(node,"case2_interp_en",c.case2_interp_en);
+    c.k_depth_max_thr2    = yf(node,"k_depth_max_thr2",c.k_depth_max_thr2);
+    c.d_depth_max_thr2    = yf(node,"d_depth_max_thr2",c.d_depth_max_thr2);
+
+    c.v_min_thr3 = yf(node,"v_min_thr3",c.v_min_thr3);
+    c.acc_thr3   = yf(node,"acc_thr3",c.acc_thr3);
+
+    c.map_cons_depth_thr3 = yf(node,"map_cons_depth_thr3",c.map_cons_depth_thr3);
+    c.map_cons_hor_thr3   = yf(node,"map_cons_hor_thr3",c.map_cons_hor_thr3);
+    c.map_cons_ver_thr3   = yf(node,"map_cons_ver_thr3",c.map_cons_ver_thr3);
+
+    c.occ_depth_thr3 = yf(node,"occ_depth_thr3",c.occ_depth_thr3);
+    c.occ_hor_thr3   = yf(node,"occ_hor_thr3",c.occ_hor_thr3);
+    c.occ_ver_thr3   = yf(node,"occ_ver_thr3",c.occ_ver_thr3);
+
+    c.depth_cons_depth_thr3     = yf(node,"depth_cons_depth_thr3",c.depth_cons_depth_thr3);
+    c.depth_cons_depth_max_thr3 = yf(node,"depth_cons_depth_max_thr3",c.depth_cons_depth_max_thr3);
+    c.depth_cons_hor_thr3       = yf(node,"depth_cons_hor_thr3",c.depth_cons_hor_thr3);
+    c.depth_cons_ver_thr3       = yf(node,"depth_cons_ver_thr3",c.depth_cons_ver_thr3);
+
+    c.k_depth3             = yf(node,"k_depth3",c.k_depth3);
+    c.occluding_times_thr3 = yi(node,"occluding_times_thr3",c.occluding_times_thr3);
+    c.case3_interp_en      = yb(node,"case3_interp_en",c.case3_interp_en);
+    c.k_depth_max_thr3     = yf(node,"k_depth_max_thr3",c.k_depth_max_thr3);
+    c.d_depth_max_thr3     = yf(node,"d_depth_max_thr3",c.d_depth_max_thr3);
+
+    c.interp_hor_thr = yf(node,"interp_hor_thr",c.interp_hor_thr);
+    c.interp_ver_thr = yf(node,"interp_ver_thr",c.interp_ver_thr);
+    c.interp_thr1    = yf(node,"interp_thr1",c.interp_thr1);
+    c.interp_static_max    = yf(node,"interp_static_max",c.interp_static_max);
+    c.interp_start_depth1  = yf(node,"interp_start_depth1",c.interp_start_depth1);
+    c.interp_kp1    = yf(node,"interp_kp1",c.interp_kp1);
+    c.interp_kd1    = yf(node,"interp_kd1",c.interp_kd1);
+    c.interp_thr2   = yf(node,"interp_thr2",c.interp_thr2);
+    c.interp_thr3   = yf(node,"interp_thr3",c.interp_thr3);
+
+    c.dyn_filter_en = yb(node,"dyn_filter_en",c.dyn_filter_en);
+    c.debug_publish = yb(node,"debug_publish",c.debug_publish);
+
+    c.laserCloudSteadObj_accu_limit = yi(node,"laserCloudSteadObj_accu_limit",c.laserCloudSteadObj_accu_limit);
+    c.voxel_filter_size             = yf(node,"voxel_filter_size",c.voxel_filter_size);
+
+    c.cluster_coupled = yb(node,"cluster_coupled",c.cluster_coupled);
+    c.cluster_future  = yb(node,"cluster_future",c.cluster_future);
+
+    c.cluster_extend_pixel     = yi(node,"cluster_extend_pixel",c.cluster_extend_pixel);
+    c.cluster_min_pixel_number = yi(node,"cluster_min_pixel_number",c.cluster_min_pixel_number);
+    c.cluster_thrustable_thresold = yf(node,"cluster_thrustable_thresold",c.cluster_thrustable_thresold);
+    c.cluster_Voxel_revolusion    = yf(node,"cluster_Voxel_revolusion",c.cluster_Voxel_revolusion);
+    c.cluster_debug_en            = yb(node,"cluster_debug_en",c.cluster_debug_en);
+    c.cluster_out_file            = ys(node,"cluster_out_file",c.cluster_out_file);
+
+    c.ver_resolution_max = yf(node,"ver_resolution_max",c.ver_resolution_max);
+    c.hor_resolution_max = yf(node,"hor_resolution_max",c.hor_resolution_max);
+
+    c.buffer_dur  = yf(node,"buffer_dur",c.buffer_dur);
+    c.point_index = yi(node,"point_index",c.point_index);
+    c.frame_id    = ys(node,"frame_id",c.frame_id);
+    c.time_file   = ys(node,"time_file",c.time_file);
+    c.time_breakdown_file = ys(node,"time_breakdown_file",c.time_breakdown_file);
+
+  } catch (const std::exception& e) {
+    std::cerr << "[DynObjConfig] YAML load failed: " << e.what() << std::endl;
+  }
+  return c;
+}
 
 void  DynObjFilter::init(ros::NodeHandle& nh)
 {
+    DynObjConfig c;
     nh.param<double>("dyn_obj/buffer_delay", buffer_delay, 0.1);
     nh.param<int>("dyn_obj/buffer_size", buffer_size, 300000);
     nh.param<int>("dyn_obj/points_num_perframe", points_num_perframe, 150000);
@@ -107,13 +273,154 @@ void  DynObjFilter::init(ros::NodeHandle& nh)
     nh.param<float>("dyn_obj/cluster_Voxel_revolusion", Cluster.Voxel_revolusion, 0.3f);
     nh.param<bool>("dyn_obj/cluster_debug_en", Cluster.debug_en, false);
     nh.param<string>("dyn_obj/cluster_out_file", Cluster.out_file, "");
-    nh.param<float>("dyn_obj/ver_resolution_max", hor_resolution_max, 0.0025f);
-    nh.param<float>("dyn_obj/hor_resolution_max", ver_resolution_max, 0.0025f);
+    nh.param<float>("dyn_obj/ver_resolution_max", ver_resolution_max, 0.0025f);
+    nh.param<float>("dyn_obj/hor_resolution_max", hor_resolution_max, 0.0025f);
     nh.param<float>("dyn_obj/buffer_dur", buffer_dur, 0.1f);
     nh.param<int>("dyn_obj/point_index", point_index, 0);
     nh.param<string>("dyn_obj/frame_id", frame_id, "camera_init");
     nh.param<string>("dyn_obj/time_file", time_file, "");
     nh.param<string>("dyn_obj/time_breakdown_file",time_breakdown_file, "");
+    initFromConfig(c);
+}
+
+void DynObjFilter::init(const std::string& config_yaml_path) {
+    DynObjConfig c;
+    c = loadDynObjConfigFromYaml(config_yaml_path, c);
+    initFromConfig(c);
+}
+
+void DynObjFilter::initFromConfig(const DynObjConfig& c) {
+    // --- same order as init(nh) ---
+    buffer_delay = c.buffer_delay;
+    buffer_size = c.buffer_size;
+    points_num_perframe = c.points_num_perframe;
+    depth_map_dur = c.depth_map_dur;
+    max_depth_map_num = c.max_depth_map_num;
+    max_pixel_points = c.max_pixel_points;
+    frame_dur = c.frame_dur;
+    dataset = c.dataset;
+
+    self_x_f = c.self_x_f;
+    self_x_b = c.self_x_b;
+    self_y_l = c.self_y_l;
+    self_y_r = c.self_y_r;
+    blind_dis = c.blind_dis;
+
+    fov_up = c.fov_up;
+    fov_down = c.fov_down;
+    fov_cut = c.fov_cut;
+    fov_left = c.fov_left;
+    fov_right = c.fov_right;
+
+    checkneighbor_range = c.checkneighbor_range;
+    stop_object_detect = c.stop_object_detect;
+
+    depth_thr1 = c.depth_thr1;
+    enter_min_thr1 = c.enter_min_thr1;
+    enter_max_thr1 = c.enter_max_thr1;
+
+    map_cons_depth_thr1 = c.map_cons_depth_thr1;
+    map_cons_hor_thr1   = c.map_cons_hor_thr1;
+    map_cons_ver_thr1   = c.map_cons_ver_thr1;
+    map_cons_hor_dis1   = c.map_cons_hor_dis1;
+    map_cons_ver_dis1   = c.map_cons_ver_dis1;
+
+    depth_cons_depth_thr1     = c.depth_cons_depth_thr1;
+    depth_cons_depth_max_thr1 = c.depth_cons_depth_max_thr1;
+    depth_cons_hor_thr1       = c.depth_cons_hor_thr1;
+    depth_cons_ver_thr1       = c.depth_cons_ver_thr1;
+
+    enlarge_z_thr1 = c.enlarge_z_thr1;
+    enlarge_angle  = c.enlarge_angle;
+    enlarge_depth  = c.enlarge_depth;
+
+    occluded_map_thr1 = c.occluded_map_thr1;
+    case1_interp_en   = c.case1_interp_en;
+
+    k_depth_min_thr1 = c.k_depth_min_thr1;
+    d_depth_min_thr1 = c.d_depth_min_thr1;
+    k_depth_max_thr1 = c.k_depth_max_thr1;
+    d_depth_max_thr1 = c.d_depth_max_thr1;
+
+    v_min_thr2 = c.v_min_thr2;
+    acc_thr2   = c.acc_thr2;
+
+    map_cons_depth_thr2 = c.map_cons_depth_thr2;
+    map_cons_hor_thr2   = c.map_cons_hor_thr2;
+    map_cons_ver_thr2   = c.map_cons_ver_thr2;
+
+    occ_depth_thr2 = c.occ_depth_thr2;
+    occ_hor_thr2   = c.occ_hor_thr2;
+    occ_ver_thr2   = c.occ_ver_thr2;
+
+    depth_cons_depth_thr2     = c.depth_cons_depth_thr2;
+    depth_cons_depth_max_thr2 = c.depth_cons_depth_max_thr2;
+    depth_cons_hor_thr2       = c.depth_cons_hor_thr2;
+    depth_cons_ver_thr2       = c.depth_cons_ver_thr2;
+
+    k_depth2             = c.k_depth2;
+    occluded_times_thr2  = c.occluded_times_thr2;
+    case2_interp_en      = c.case2_interp_en;
+    k_depth_max_thr2     = c.k_depth_max_thr2;
+    d_depth_max_thr2     = c.d_depth_max_thr2;
+
+    v_min_thr3 = c.v_min_thr3;
+    acc_thr3   = c.acc_thr3;
+
+    map_cons_depth_thr3 = c.map_cons_depth_thr3;
+    map_cons_hor_thr3   = c.map_cons_hor_thr3;
+    map_cons_ver_thr3   = c.map_cons_ver_thr3;
+
+    occ_depth_thr3 = c.occ_depth_thr3;
+    occ_hor_thr3   = c.occ_hor_thr3;
+    occ_ver_thr3   = c.occ_ver_thr3;
+
+    depth_cons_depth_thr3     = c.depth_cons_depth_thr3;
+    depth_cons_depth_max_thr3 = c.depth_cons_depth_max_thr3;
+    depth_cons_hor_thr3       = c.depth_cons_hor_thr3;
+    depth_cons_ver_thr3       = c.depth_cons_ver_thr3;
+
+    k_depth3             = c.k_depth3;
+    occluding_times_thr3 = c.occluding_times_thr3;
+    case3_interp_en      = c.case3_interp_en;
+    k_depth_max_thr3     = c.k_depth_max_thr3;
+    d_depth_max_thr3     = c.d_depth_max_thr3;
+
+    interp_hor_thr = c.interp_hor_thr;
+    interp_ver_thr = c.interp_ver_thr;
+    interp_thr1    = c.interp_thr1;
+    interp_static_max    = c.interp_static_max;
+    interp_start_depth1  = c.interp_start_depth1;
+    interp_kp1    = c.interp_kp1;
+    interp_kd1    = c.interp_kd1;
+    interp_thr2   = c.interp_thr2;
+    interp_thr3   = c.interp_thr3;
+
+    dyn_filter_en = c.dyn_filter_en;
+    debug_en      = c.debug_publish;
+
+    laserCloudSteadObj_accu_limit = c.laserCloudSteadObj_accu_limit;
+    voxel_filter_size             = c.voxel_filter_size;
+
+    cluster_coupled = c.cluster_coupled;
+    cluster_future  = c.cluster_future;
+
+    Cluster.cluster_extend_pixel     = c.cluster_extend_pixel;
+    Cluster.cluster_min_pixel_number = c.cluster_min_pixel_number;
+    Cluster.thrustable_thresold      = c.cluster_thrustable_thresold;
+    Cluster.Voxel_revolusion         = c.cluster_Voxel_revolusion;
+    Cluster.debug_en                 = c.cluster_debug_en;
+    Cluster.out_file                 = c.cluster_out_file;
+
+    ver_resolution_max = c.ver_resolution_max;
+    hor_resolution_max = c.hor_resolution_max;
+
+    buffer_dur  = c.buffer_dur;
+    point_index = c.point_index;
+    frame_id    = c.frame_id;
+    time_file   = c.time_file;
+    time_breakdown_file = c.time_breakdown_file;
+
     max_ind   = floor(3.1415926 * 2 / hor_resolution_max);
     if (pcl_his_list.size() == 0)
     {   

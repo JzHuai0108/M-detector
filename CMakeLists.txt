@@ -83,6 +83,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 message(Eigen: ${EIGEN3_INCLUDE_DIR})
 
@@ -109,9 +110,11 @@ catkin_package(
   INCLUDE_DIRS
 )
 
+add_library(${PROJECT_NAME} src/DynObjFilter.cpp src/DynObjCluster.cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} yaml-cpp TBB::tbb)
 
-add_executable(dynfilter src/dynfilter_with_odom.cpp src/DynObjFilter.cpp src/DynObjCluster.cpp)
-target_link_libraries(dynfilter ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} TBB::tbb)
+add_executable(dynfilter src/dynfilter_with_odom.cpp)
+target_link_libraries(dynfilter ${PROJECT_NAME})
 
 add_executable(display_prediction src/display_prediction.cpp )
 target_link_libraries(display_prediction ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} TBB::tbb)
@@ -123,3 +126,32 @@ add_executable(cal_recall src/cal_recall_multi.cpp)
 target_link_libraries(cal_recall ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} TBB::tbb)
 
 
+## --- Install targets (library + nodes) ---
+install(TARGETS
+  ${PROJECT_NAME}
+  dynfilter
+  display_prediction
+  reader
+  cal_recall
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}   # static libs (.a)
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}   # shared libs (.so)
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}   # executables (lib/<pkg>/node)
+)
+
+## --- Install public headers (if you have any) ---
+# Assumes headers live in include/<project_name>/
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+)
+
+## --- Install runtime resources (optional but typical) ---
+# Install launch files, YAML configs, RViz configs, etc.
+install(DIRECTORY launch config rviz
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  FILES_MATCHING
+    PATTERN "*.launch"
+    PATTERN "*.xml"
+    PATTERN "*.yaml"
+    PATTERN "*.rviz"
+)
