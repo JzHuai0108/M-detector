@@ -107,7 +107,8 @@ generate_messages(DEPENDENCIES
 catkin_package(
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs message_runtime
   DEPENDS EIGEN3 PCL
-  INCLUDE_DIRS
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME} 
 )
 
 add_library(${PROJECT_NAME} src/DynObjFilter.cpp src/DynObjCluster.cpp)
