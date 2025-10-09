@@ -11,7 +11,7 @@
 // #include <so3_math.h>
 #include <ros/ros.h>
 #include <Eigen/Core>
-#include <types.h>
+#include "m_detector/types.h"
 #include <m_detector/DynObjFilter.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>

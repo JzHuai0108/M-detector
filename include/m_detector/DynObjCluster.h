@@ -21,9 +21,9 @@
 #include <Eigen/Eigenvalues>
 #include <unordered_map>
 #include <unordered_set>
-#include <cluster_predict/DBSCAN_kdtree.h>
-#include <cluster_predict/EA_disk.h>
-#include <cluster_predict/voxel_cluster.h>
+#include <m_detector/cluster_predict/DBSCAN_kdtree.h>
+#include <m_detector/cluster_predict/EA_disk.h>
+#include <m_detector/cluster_predict/voxel_cluster.h>
 
 typedef pcl::PointXYZINormal PointType;
 typedef std::vector<pcl::PointCloud<PointType>> VoxelMap;

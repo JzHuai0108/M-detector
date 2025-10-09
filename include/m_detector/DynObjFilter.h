@@ -7,7 +7,8 @@
 #include <ros/ros.h>
 // #include <so3_math.h>
 #include <Eigen/Core>
-#include <types.h>
+#include <Eigen/LU>
+
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <nav_msgs/Path.h>
@@ -18,9 +19,11 @@
 #include <pcl/filters/voxel_grid.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <Eigen/LU>
-#include <m_detector/DynObjCluster.h>
-#include <parallel_q.h>
+
+#include "m_detector/DynObjCluster.h"
+#include "m_detector/parallel_q.h"
+#include "m_detector/types.h"
+
 #include <algorithm>
 #include <chrono>
 #include <execution>
