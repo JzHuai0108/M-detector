@@ -110,15 +110,28 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} 
 )
+include_directories(${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME} src/DynObjFilter.cpp src/DynObjCluster.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} yaml-cpp)
+add_dependencies(${PROJECT_NAME}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
 
 add_executable(dynfilter src/dynfilter_with_odom.cpp)
 target_link_libraries(dynfilter ${PROJECT_NAME})
+add_dependencies(dynfilter
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
 
 add_executable(display_prediction src/display_prediction.cpp )
 target_link_libraries(display_prediction ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(display_prediction
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+)
 
 add_executable(reader src/reader.cpp)
 target_link_libraries(reader ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
