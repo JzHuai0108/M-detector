@@ -203,7 +203,7 @@ void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, std_msgs::
         index_bbox[i] = i;
     }
     std::vector<std::unordered_set<int>> used_map_set_vec(bbox.Center.size());
-    std::for_each(std::execution::par, index_bbox.begin(), index_bbox.end(), [&](const int &bbox_i)
+    std::for_each(std::execution::seq, index_bbox.begin(), index_bbox.end(), [&](const int &bbox_i)
                   {
         PointType center;
         float x_size = bbox.Center[bbox_i].pose.covariance[3*6+3];
@@ -330,7 +330,7 @@ void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, std_msgs::
     ros::Time t3 = ros::Time::now();
     std::vector<double> ground_estimate_total_time(index_bbox.size(), 0.0);
     std::vector<double> region_growth_time(index_bbox.size(), 0.0);
-    std::for_each(std::execution::par, index_bbox.begin(), index_bbox.end(), [&](const int &k)
+    std::for_each(std::execution::seq, index_bbox.begin(), index_bbox.end(), [&](const int &k)
     {   
         geometry_msgs::PoseWithCovarianceStamped center = bbox.Center[k];
         float x_size = center.pose.covariance[3*6+3];

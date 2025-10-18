@@ -2,6 +2,8 @@
 #include <vector>
 #include <random>
 #include <m_detector/DynObjFilter.h>
+#include <m_detector/omp_compat.h>
+
 // #include <algorithm>
 // #include <chrono>
 // #include <execution>
@@ -592,8 +594,8 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
     points.resize(size);
     point_soph* p = point_soph_pointers[cur_point_soph_pointers];
     if(time_file != "") time_out << size << " "; //rec computation time
-    std::for_each(std::execution::par, index.begin(), index.end(), [&](const int &i)
-    // std::for_each(std::execution::seq, index.begin(), index.end(), [&](const int &i)
+    // std::for_each(std::execution::par, index.begin(), index.end(), [&](const int &i)
+    std::for_each(std::execution::seq, index.begin(), index.end(), [&](const int &i)
     {   
         p[i].reset();     
         V3D p_body(feats_undistort->points[i].x, feats_undistort->points[i].y, feats_undistort->points[i].z);
@@ -894,16 +896,16 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
     time_total = omp_get_wtime() - t00;
     time_ind ++;
     time_total_avr = time_total_avr * (time_ind - 1) / time_ind + time_total / time_ind;
-    std::cout << scan_end_time << " dynamic points " 
-              << laserCloudDynObj_clus->size() << " / " << feats_undistort->size()
-              << " tags " << dyn_tag_count << " tags orig " << dyn_tag_orig_count << std::endl;
+    // std::cout << scan_end_time << " dynamic points " 
+    //           << laserCloudDynObj_clus->size() << " / " << feats_undistort->size()
+    //           << " tags " << dyn_tag_count << " tags orig " << dyn_tag_orig_count << std::endl;
 }
 
 void  DynObjFilter::Points2Buffer(std::vector<point_soph*> &points, std::vector<int> &index_vector)
 {
     int cur_tail = buffer.tail;
     buffer.push_parallel_prepare(points.size());
-    std::for_each(std::execution::par, index_vector.begin(), index_vector.end(), [&](const int &i)
+    std::for_each(std::execution::seq, index_vector.begin(), index_vector.end(), [&](const int &i)
     {   
         buffer.push_parallel(points[i], cur_tail+i);
     });

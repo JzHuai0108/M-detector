@@ -62,10 +62,10 @@ else()
   add_definitions(-DMP_PROC_NUM=1)
 endif()
 
-find_package(OpenMP QUIET)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   ${OpenMP_C_FLAGS}")
-find_package(TBB REQUIRED COMPONENTS tbb)
+# find_package(OpenMP QUIET)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}   ${OpenMP_C_FLAGS}")
+# find_package(TBB REQUIRED COMPONENTS tbb)
 
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
@@ -112,19 +112,19 @@ catkin_package(
 )
 
 add_library(${PROJECT_NAME} src/DynObjFilter.cpp src/DynObjCluster.cpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} yaml-cpp TBB::tbb)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} yaml-cpp)
 
 add_executable(dynfilter src/dynfilter_with_odom.cpp)
 target_link_libraries(dynfilter ${PROJECT_NAME})
 
 add_executable(display_prediction src/display_prediction.cpp )
-target_link_libraries(display_prediction ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} TBB::tbb)
+target_link_libraries(display_prediction ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(reader src/reader.cpp)
 target_link_libraries(reader ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(cal_recall src/cal_recall_multi.cpp)
-target_link_libraries(cal_recall ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} TBB::tbb)
+target_link_libraries(cal_recall ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
 
 ## --- Install targets (library + nodes) ---

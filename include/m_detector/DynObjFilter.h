@@ -1,7 +1,7 @@
 #ifndef DYN_OBJ_FLT_H
 #define DYN_OBJ_FLT_H
 
-#include <omp.h>
+// #include <omp.h>
 #include <mutex>
 #include <math.h>
 #include <ros/ros.h>
@@ -354,7 +354,7 @@ public:
         project_T = transl;
         map_index = frame;
         // double t = omp_get_wtime();
-        std::for_each(std::execution::par, index_vector.begin(), index_vector.end(), [&](const int &i)
+        std::for_each(std::execution::seq, index_vector.begin(), index_vector.end(), [&](const int &i)
         {
             depth_map[i].clear();
         });

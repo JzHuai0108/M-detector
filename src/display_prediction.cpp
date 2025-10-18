@@ -1,5 +1,5 @@
 
-#include <omp.h>
+// #include <omp.h>
 #include <mutex>
 #include <math.h>
 #include <thread>
