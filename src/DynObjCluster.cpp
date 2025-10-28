@@ -17,7 +17,8 @@ void DynObjCluster::Init()
     GridMapedgesize_xy = ceil(maprange(0) / Voxel_revolusion);
     GridMapedgesize_z = ceil(maprange(2) / Voxel_revolusion);
     GridMapsize = GridMapedgesize_xy * GridMapedgesize_xy * GridMapedgesize_z;
-    std::cout << "clustering init begin, please wait------------" << GridMapsize << std::endl;
+    std::cout << "clustering init begin, please wait------------\n";
+    std::cout << "map size " << GridMapsize << ", res " << Voxel_revolusion << std::endl;
     umap.reserve(GridMapsize);
     umap.resize(GridMapsize);
     umap_ground.reserve(GridMapsize);
