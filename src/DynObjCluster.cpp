@@ -49,8 +49,8 @@ void DynObjCluster::Clusterprocess(std::vector<int> &dyn_tag, pcl::PointCloud<Po
     cur_frame += 1;
 }
 
-void DynObjCluster::ClusterAndTrack(std::vector<int> &dyn_tag, pcl::PointCloud<PointType>::Ptr &points_in, ros::Publisher points_in_msg, std_msgs::Header header_in,\ 
-                    ros::Publisher points_out_msg,
+void DynObjCluster::ClusterAndTrack(std::vector<int> &dyn_tag, pcl::PointCloud<PointType>::Ptr &points_in, ros::Publisher points_in_msg, std_msgs::Header header_in,
+                                    ros::Publisher points_out_msg,
                                     ros::Publisher cluster_vis, ros::Publisher predict_path, bbox_t &bbox, double delta,
                                     const pcl::PointCloud<PointType> &raw_point)
 {

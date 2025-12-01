@@ -112,7 +112,7 @@ catkin_package(
 )
 include_directories(${catkin_INCLUDE_DIRS})
 
-add_library(${PROJECT_NAME} src/DynObjFilter.cpp src/DynObjCluster.cpp)
+add_library(${PROJECT_NAME} STATIC src/DynObjFilter.cpp src/DynObjCluster.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS} yaml-cpp)
 add_dependencies(${PROJECT_NAME}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}

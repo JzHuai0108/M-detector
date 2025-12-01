@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iostream>
 #include <csignal>
-#include <unistd.h>
 
 #include <m_detector/DynObjFilter.h>
 #include <visualization_msgs/Marker.h>
@@ -18,8 +17,7 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/Vector3.h>
-#include <unistd.h> 
-#include <dirent.h> 
+#include <filesystem>
 #include <iomanip>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -28,6 +26,7 @@
 
 
 using namespace std;
+namespace fs = std::filesystem;
 
 typedef pcl::PointXYZINormal PointType;
 typedef pcl::PointCloud<PointType> PointCloudXYZI;
@@ -111,15 +110,18 @@ void NuscenesCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &
     int label_file_num = 0;
     if(label_folder != "")
     {
-        DIR* label_dir;	
-        label_dir = opendir(label_folder.c_str());
-        struct dirent* label_ptr;
-        while((label_ptr = readdir(label_dir)) != NULL)
+        std::error_code ec;
+        for(fs::directory_iterator label_it(label_folder, ec); !ec && label_it != fs::directory_iterator(); label_it.increment(ec))
         {
-            if(label_ptr->d_name[0] == '.') {continue;}
+            const auto filename = label_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             label_file_num++;
         }
-        closedir(label_dir);
+        if(ec)
+        {
+            cout<<"less label "<<label_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -129,15 +131,18 @@ void NuscenesCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &
     int pred_file_num = 0;
     if(pred_folder != "")
     {
-        DIR* pred_dir;	
-        pred_dir = opendir(pred_folder.c_str());
-        struct dirent* pred_ptr;
-        while((pred_ptr = readdir(pred_dir)) != NULL)
+        std::error_code ec;
+        for(fs::directory_iterator pred_it(pred_folder, ec); !ec && pred_it != fs::directory_iterator(); pred_it.increment(ec))
         {
-            if(pred_ptr->d_name[0] == '.') {continue;}
+            const auto filename = pred_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             pred_file_num++;
         }
-        closedir(pred_dir);
+        if(ec)
+        {
+            cout<<"less pred "<<pred_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -340,15 +345,19 @@ void WaymoCalRecall(std::vector<float> &/*recalls_vehicle*/, std::vector<float> 
     int label_file_num = 0;
     if(label_folder != "")
     {
-        DIR* label_dir;	
-        label_dir = opendir(label_folder.c_str());
-        struct dirent* label_ptr;
-        while((label_ptr = readdir(label_dir)) != NULL)
+        std::error_code ec;
+        fs::directory_iterator end;
+        for(fs::directory_iterator label_it(label_folder, ec); !ec && label_it != end; label_it.increment(ec))
         {
-            if(label_ptr->d_name[0] == '.') {continue;}
+            const auto filename = label_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             label_file_num++;
         }
-        closedir(label_dir);
+        if(ec)
+        {
+            cout<<"less label "<<label_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -358,15 +367,19 @@ void WaymoCalRecall(std::vector<float> &/*recalls_vehicle*/, std::vector<float> 
     int pred_file_num = 0;
     if(pred_folder != "")
     {
-        DIR* pred_dir;	
-        pred_dir = opendir(pred_folder.c_str());
-        struct dirent* pred_ptr;
-        while((pred_ptr = readdir(pred_dir)) != NULL)
+        std::error_code ec;
+        fs::directory_iterator end;
+        for(fs::directory_iterator pred_it(pred_folder, ec); !ec && pred_it != end; pred_it.increment(ec))
         {
-            if(pred_ptr->d_name[0] == '.') {continue;}
+            const auto filename = pred_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             pred_file_num++;
         }
-        closedir(pred_dir);
+        if(ec)
+        {
+            cout<<"less pred "<<pred_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -536,15 +549,19 @@ void KittiCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
     int label_file_num = 0;
     if(label_folder != "")
     {
-        DIR* label_dir;	
-        label_dir = opendir(label_folder.c_str());
-        struct dirent* label_ptr;
-        while((label_ptr = readdir(label_dir)) != NULL)
+        std::error_code ec;
+        fs::directory_iterator end;
+        for(fs::directory_iterator label_it(label_folder, ec); !ec && label_it != end; label_it.increment(ec))
         {
-            if(label_ptr->d_name[0] == '.') {continue;}
+            const auto filename = label_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             label_file_num++;
         }
-        closedir(label_dir);
+        if(ec)
+        {
+            cout<<"less label "<<label_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -554,15 +571,19 @@ void KittiCalRecall(std::vector<float> &recalls_vehicle, std::vector<float> &rec
     int pred_file_num = 0;
     if(pred_folder != "")
     {
-        DIR* pred_dir;	
-        pred_dir = opendir(pred_folder.c_str());
-        struct dirent* pred_ptr;
-        while((pred_ptr = readdir(pred_dir)) != NULL)
+        std::error_code ec;
+        fs::directory_iterator end;
+        for(fs::directory_iterator pred_it(pred_folder, ec); !ec && pred_it != end; pred_it.increment(ec))
         {
-            if(pred_ptr->d_name[0] == '.') {continue;}
+            const auto filename = pred_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             pred_file_num++;
         }
-        closedir(pred_dir);
+        if(ec)
+        {
+            cout<<"less pred "<<pred_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -735,15 +756,19 @@ void AviaCalRecall(std::vector<float> &/*recalls_vehicle*/, std::vector<float> &
     int label_file_num = 0;
     if(label_folder != "")
     {
-        DIR* label_dir;	
-        label_dir = opendir(label_folder.c_str());
-        struct dirent* label_ptr;
-        while((label_ptr = readdir(label_dir)) != NULL)
+        std::error_code ec;
+        fs::directory_iterator end;
+        for(fs::directory_iterator label_it(label_folder, ec); !ec && label_it != end; label_it.increment(ec))
         {
-            if(label_ptr->d_name[0] == '.') {continue;}
+            const auto filename = label_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             label_file_num++;
         }
-        closedir(label_dir);
+        if(ec)
+        {
+            cout<<"less label "<<label_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -753,15 +778,19 @@ void AviaCalRecall(std::vector<float> &/*recalls_vehicle*/, std::vector<float> &
     int pred_file_num = 0;
     if(pred_folder != "")
     {
-        DIR* pred_dir;	
-        pred_dir = opendir(pred_folder.c_str());
-        struct dirent* pred_ptr;
-        while((pred_ptr = readdir(pred_dir)) != NULL)
+        std::error_code ec;
+        fs::directory_iterator end;
+        for(fs::directory_iterator pred_it(pred_folder, ec); !ec && pred_it != end; pred_it.increment(ec))
         {
-            if(pred_ptr->d_name[0] == '.') {continue;}
+            const auto filename = pred_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             pred_file_num++;
         }
-        closedir(pred_dir);
+        if(ec)
+        {
+            cout<<"less pred "<<pred_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -936,15 +965,19 @@ void SemanticCombine()
     int semantic_file_num = 0;
     if(semantic_folder != "")
     {
-        DIR* semantic_dir;	
-        semantic_dir = opendir(semantic_folder.c_str());
-        struct dirent* semantic_ptr;
-        while((semantic_ptr = readdir(semantic_dir)) != NULL)
+        std::error_code ec;
+        fs::directory_iterator end;
+        for(fs::directory_iterator semantic_it(semantic_folder, ec); !ec && semantic_it != end; semantic_it.increment(ec))
         {
-            if(semantic_ptr->d_name[0] == '.') {continue;}
+            const auto filename = semantic_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             semantic_file_num++;
         }
-        closedir(semantic_dir);
+        if(ec)
+        {
+            cout<<"less semantic "<<semantic_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -954,15 +987,19 @@ void SemanticCombine()
     int pred_file_num = 0;
     if(pred_folder != "")
     {
-        DIR* pred_dir;	
-        pred_dir = opendir(pred_folder.c_str());
-        struct dirent* pred_ptr;
-        while((pred_ptr = readdir(pred_dir)) != NULL)
+        std::error_code ec;
+        fs::directory_iterator end;
+        for(fs::directory_iterator pred_it(pred_folder, ec); !ec && pred_it != end; pred_it.increment(ec))
         {
-            if(pred_ptr->d_name[0] == '.') {continue;}
+            const auto filename = pred_it->path().filename().string();
+            if(!filename.empty() && filename[0] == '.') {continue;}
             pred_file_num++;
         }
-        closedir(pred_dir);
+        if(ec)
+        {
+            cout<<"less pred "<<pred_folder<<endl;
+            return;
+        }
     } 
     else
     {
@@ -1382,16 +1419,19 @@ int main(int argc, char** argv)
         vector<string> seq_names;
         if(dataset_folder != "")
         {
-            DIR* pred_dir;	
-            pred_dir = opendir(all_pred.c_str());
-            struct dirent* pred_ptr;
-            while((pred_ptr = readdir(pred_dir)) != NULL)
+            std::error_code ec;
+            fs::directory_iterator end;
+            for(fs::directory_iterator pred_it(all_pred, ec); !ec && pred_it != end; pred_it.increment(ec))
             {
-                if(pred_ptr->d_name[0] == '.') {continue;}
-                string cur_folder(pred_ptr->d_name);
-                seq_names.push_back(cur_folder);
+                const auto filename = pred_it->path().filename().string();
+                if(!filename.empty() && filename[0] == '.') {continue;}
+                seq_names.push_back(filename);
             }
-            closedir(pred_dir);
+            if(ec)
+            {
+                cout<<"less pred "<<all_pred<<endl;
+                return 0;
+            }
         }
         
         for(int i = 0; i < static_cast<int>(seq_names.size()); i++ )

@@ -7,7 +7,6 @@
 #include <fstream>
 #include <iostream>
 #include <csignal>
-#include <unistd.h>
 
 // #include <Python.h>
 #include <ros/ros.h>
@@ -58,7 +57,7 @@ int     cur_frame = 0;
 deque<M3D> buffer_rots;
 deque<V3D> buffer_poss;
 deque<ros::Time> buffer_times;
-deque<boost::shared_ptr<PointCloudXYZI>> buffer_pcs;
+deque<PointCloudXYZI::Ptr> buffer_pcs;
 
 
 ros::Publisher pub_pcl_dyn, pub_pcl_dyn_extend, pub_pcl_std; 
@@ -79,7 +78,7 @@ void OdomCallback(const nav_msgs::Odometry &cur_odom)
 
 void PointsCallback(const sensor_msgs::PointCloud2ConstPtr& msg_in)
 {
-    boost::shared_ptr<PointCloudXYZI> feats_undistort(new PointCloudXYZI());
+    PointCloudXYZI::Ptr feats_undistort(new PointCloudXYZI());
     pcl::fromROSMsg(*msg_in, *feats_undistort);
     buffer_pcs.push_back(feats_undistort); 
 }
@@ -89,7 +88,7 @@ void TimerCallback(const ros::TimerEvent& /*e*/)
 {
     if(buffer_pcs.size() > 0 && buffer_poss.size() > 0 && buffer_rots.size() > 0 && buffer_times.size() > 0)
     {
-        boost::shared_ptr<PointCloudXYZI> cur_pc = buffer_pcs.at(0);
+        PointCloudXYZI::Ptr cur_pc = buffer_pcs.at(0);
         buffer_pcs.pop_front();
         auto cur_rot = buffer_rots.at(0);
         buffer_rots.pop_front();

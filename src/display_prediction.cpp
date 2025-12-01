@@ -6,7 +6,6 @@
 #include <fstream>
 #include <iostream>
 #include <csignal>
-#include <unistd.h>
 // #include <Python.h>
 // #include <so3_math.h>
 #include <ros/ros.h>
@@ -26,12 +25,12 @@
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/Vector3.h>
 #include <pcl/filters/random_sample.h>
-#include <unistd.h> 
-#include <dirent.h> 
+#include <filesystem>
 #include <iomanip>
 #include <m_detector/CustomMsg.h>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 pcl::PointCloud<pcl::PointXYZINormal> lastcloud;
 PointCloudXYZI::Ptr last_pc(new PointCloudXYZI());
@@ -330,15 +329,23 @@ int main(int argc, char** argv)
 
     
     int pred_num = 0;
-    DIR* pred_dir;	
-    pred_dir = opendir(pred_folder.c_str());
-    struct dirent* pred_ptr;
-    while((pred_ptr = readdir(pred_dir)) != NULL)
+    try
     {
-        if(pred_ptr->d_name[0] == '.') {continue;}
-        pred_num++;
+        for(const auto& entry : fs::directory_iterator(pred_folder))
+        {
+            const auto filename = entry.path().filename().string();
+            if(!filename.empty() && filename[0] == '.')
+            {
+                continue;
+            }
+            pred_num++;
+        }
     }
-    closedir(pred_dir);
+    catch(const fs::filesystem_error& e)
+    {
+        std::cerr << "Failed to scan prediction folder: " << e.what() << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     minus_num = 0;
 
