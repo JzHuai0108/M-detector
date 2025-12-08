@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <execution>
+#include <Eigen/StdVector>
 
 // void DynObjCluster::Init(ros::Publisher &pub_pcl_dyn_extend_in, ros::Publisher &cluster_vis_high_in, ros::Publisher &pub_ground_points_in)
 void DynObjCluster::Init()
@@ -565,7 +566,7 @@ void DynObjCluster::oobb_estimate(const VoxelMap &vmap, const pcl::PointCloud<Po
     int NMATCH = 5;
     int n = 3; // number of rings
     EA_disk disk(n);
-    std::vector<std::vector<Eigen::Vector4f>> NormVectorMap(disk.size);
+    std::vector<std::vector<Eigen::Vector4f, Eigen::aligned_allocator<Eigen::Vector4f>>> NormVectorMap(disk.size);
     std::vector<std::vector<int>> PointSizeList(disk.size);
     for (int i = 0; i < vmap.size(); i++)
     {

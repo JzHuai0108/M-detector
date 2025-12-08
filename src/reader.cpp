@@ -44,7 +44,7 @@ std::vector<std::string> findAndSortPcFiles(const std::string& folder) {
     else if (ext == ".ply") ply_files.push_back(entry.path().string());
   }
 
-  // pick the format with the most files (tie → .pcd)
+  // pick the format with the most files (tie -> .pcd)
   auto& pc_files = (pcd_files.size() >= ply_files.size()) ? pcd_files : ply_files;
 
   // Extract numeric key from stem
@@ -400,7 +400,7 @@ int main(int argc, char** argv) {
 
     sensor_msgs::PointCloud2 msg_registered;
 
-    // Convert cloud_msg → typed → transform → toROSMsg
+    // Convert cloud_msg -> typed -> transform -> toROSMsg
     if (dtype == "XYZINormal") {
       pcl::PointCloud<pcl::PointXYZINormal> c, c_reg;
       pcl::fromROSMsg(cloud_msg, c);

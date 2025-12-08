@@ -87,6 +87,7 @@ Eigen::Matrix3f hat(const Eigen::Vector3f &v)
 
 struct IMUST
 {
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   float t;
   Eigen::Matrix3f R;
   Eigen::Vector3f p;

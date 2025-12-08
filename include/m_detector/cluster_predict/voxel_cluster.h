@@ -102,6 +102,7 @@ template <> struct hash<VOXEL> {
 class VOXEL_CLUSTER
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     typedef pcl::PointXYZINormal PointType;
     std::vector<int> voxel_list;
     std::unordered_set<int> voxel_set;

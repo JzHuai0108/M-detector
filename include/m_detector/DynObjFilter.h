@@ -55,6 +55,7 @@ enum dyn_obj_flg {STATIC, CASE1, CASE2, CASE3, SELF, UNCERTAIN, INVALID};
 
 struct point_soph
 {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     int          hor_ind;
     V3F          vec;
     int          ver_ind;
@@ -236,6 +237,7 @@ typedef std::vector<std::vector<point_soph*>>  DepthMap2D;
 class DepthMap
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     DepthMap2D       depth_map;
     double           time;
     int              map_index;

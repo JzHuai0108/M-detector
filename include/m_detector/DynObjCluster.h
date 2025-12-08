@@ -19,6 +19,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <Eigen/Eigenvalues>
+#include <Eigen/StdVector>
 #include <unordered_map>
 #include <unordered_set>
 #include <m_detector/cluster_predict/DBSCAN_kdtree.h>
@@ -39,9 +40,9 @@ struct bbox_t
     std::vector<pcl::PointCloud<PointType>>                         true_ground;
     std::vector<std::unordered_set<int>>                          Ground_voxels_set;
     std::vector<std::vector<int>>                                 Ground_voxels_vec;
-    std::vector<Eigen::Vector3f>                                    OOBB_Min_point;
-    std::vector<Eigen::Vector3f>                                    OOBB_Max_point;
-    std::vector<Eigen::Matrix3f>                                    OOBB_R;
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> OOBB_Min_point;
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> OOBB_Max_point;
+    std::vector<Eigen::Matrix3f, Eigen::aligned_allocator<Eigen::Matrix3f>> OOBB_R;
     std::vector<int>                                                umap_points_num;
 
     void reset()
@@ -62,6 +63,7 @@ struct bbox_t
 
 class DynObjCluster {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     int nn_points_size = 3;
     float nn_points_radius = 0.6f;
     int min_cluster_size = 8;

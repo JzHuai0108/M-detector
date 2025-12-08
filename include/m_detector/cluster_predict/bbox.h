@@ -5,6 +5,7 @@
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <Eigen/StdVector>
 #include <visualization_msgs/Marker.h>
 
 struct bbox_s
@@ -12,6 +13,7 @@ struct bbox_s
     Eigen::Vector3f low_point;
     Eigen::Vector3f up_point;
     Eigen::Matrix3f R;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     bbox_s(){}
 
@@ -131,10 +133,10 @@ class bbox_iou
 public:
     enum Point_from_plane{FRONT, ON, BEHIND};
     typedef Eigen::Vector3f              Point;
-    typedef std::vector<Point>           Plane;
+    typedef std::vector<Point, Eigen::aligned_allocator<Point>> Plane;
     bbox_s box_1;
     bbox_s box_2;
-    std::vector<Eigen::Vector2i> coincide_tags;
+    std::vector<Eigen::Vector2i, Eigen::aligned_allocator<Eigen::Vector2i>> coincide_tags;
     Eigen::Vector2i coincide_tag{-1, -1};
     std::map<int, int> plane_left_id   = {{0, 0}, {1, 1}, {2, 5}, {3, 4}};
     std::map<int, int> plane_right_id  = {{0, 2}, {1, 3}, {2, 7}, {3, 6}};
@@ -144,6 +146,7 @@ public:
     std::map<int, int> plane_down_id   = {{0, 0}, {1, 2}, {2, 3}, {3, 1}};
 
     double On_Plane_Thresold = 0.0001;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     bbox_iou(bbox_s &box1, bbox_s &box2)
     {
