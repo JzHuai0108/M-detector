@@ -5,28 +5,50 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(NOT CMAKE_BUILD_TYPE)
+# Only set a default build type for single-config generators
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-# ------------------------------------------------------------------------------
-# Warnings & optimization flags by compiler + config (CMake 3.5-safe)
+# ------------------------------------------------------------------------------ 
+# Warnings & optimization flags by compiler + config
 # ------------------------------------------------------------------------------
 if(MSVC)
-  # /permissive- for stricter C++ conformance (VS 2017+ supports it; harmless otherwise)
-  if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_compile_options(/O2 /W4 /permissive-)
-  else()
-    add_compile_options(/Od /W4 /Zi /permissive-)
-  endif()
+  # Common flags
+  add_compile_options(/permissive-) 
+
+  # Per-config optimization + debug info
+  add_compile_options(
+      $<$<CONFIG:Release>:/O2>
+      $<$<CONFIG:Release>:/W4>
+      $<$<CONFIG:Release>:/DNDEBUG>
+
+      $<$<CONFIG:RelWithDebInfo>:/O2>
+      $<$<CONFIG:RelWithDebInfo>:/W4>
+      $<$<CONFIG:RelWithDebInfo>:/DNDEBUG>
+
+      $<$<CONFIG:Debug>:/Od>
+      $<$<CONFIG:Debug>:/W4>
+      $<$<CONFIG:Debug>:/Zi>
+  )
+
+  # (Optional) AVX2 + precise FP
+  # add_compile_options(
+  #     $<$<CONFIG:Release>:/fp:precise>
+  #     $<$<CONFIG:Release>:/arch:AVX2>
+  #     $<$<CONFIG:RelWithDebInfo>:/fp:precise>
+  #     $<$<CONFIG:RelWithDebInfo>:/arch:AVX2>
+  # )
+
 else()
   # Avoid -ffast-math and -march=native (can change numerical results)
+  # GCC/Clang side (single-config); here CMAKE_BUILD_TYPE matters
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_compile_options(-O3 -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wno-unused-function)
+    add_compile_options(-O3 -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wno-unused-function -DNDEBUG)
   else()
     add_compile_options(-O1 -g -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wno-unused-function)
   endif()
-  # Ensure exceptions enabled (some toolchains disable by default)
+
   add_compile_options(-fexceptions)
 endif()
 
