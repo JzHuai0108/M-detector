@@ -22,6 +22,7 @@
 #include <Eigen/StdVector>
 #include <unordered_map>
 #include <unordered_set>
+#include <chrono>
 #include <m_detector/cluster_predict/DBSCAN_kdtree.h>
 #include <m_detector/cluster_predict/EA_disk.h>
 #include <m_detector/cluster_predict/voxel_cluster.h>
@@ -73,7 +74,7 @@ public:
     float Voxel_revolusion = 0.3f;
     int time_ind =0;
     double time_total = 0.0, time_total_average =0.0;
-    ros::Time cluster_begin;
+    std::chrono::steady_clock::time_point cluster_begin;
     int cur_frame = 0;
     float thrustable_thresold = 0.3f;
     std::string out_file = "";

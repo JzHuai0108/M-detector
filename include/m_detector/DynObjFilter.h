@@ -541,8 +541,8 @@ public:
     
     DynObjCluster Cluster;
     bool cluster_coupled = false, cluster_future = false;
-    std::vector<int> dyn_tag_cluster;
-    std::vector<int> dyn_tag_origin;
+    std::vector<int> dyn_tag_cluster; // status of points in current frame after the clustering step
+    std::vector<int> dyn_tag_origin; // status of points in current frame before the clustering step
     bool draw_depth = false;
 
     float  depth_thr1 = 0.15f, map_cons_depth_thr1 = 0.5f, map_cons_hor_thr1 = 0.02f, map_cons_ver_thr1 = 0.01f;
