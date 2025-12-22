@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <chrono>
 #include <execution>
+#include <memory>
 
 #include <opencv2/opencv.hpp>
 #include <string>
@@ -79,7 +80,7 @@ struct point_soph
     std::array<float, MAP_NUM> last_depth_interps = {};
     std::array<V3F, HASH_PRIM> last_vecs = {};
     std::array<Eigen::Vector3i, HASH_PRIM> last_positions = {};   
-    typedef boost::shared_ptr<point_soph> Ptr;
+    typedef std::shared_ptr<point_soph> Ptr;
     point_soph(V3D & point, float & hor_resolution_max, float & ver_resolution_max)
     {
         vec(2)     = float(point.norm());
@@ -252,7 +253,7 @@ public:
     int*             max_depth_index_all = nullptr;
     int*             min_depth_index_all = nullptr;
     std::vector<int> index_vector;
-    typedef boost::shared_ptr<DepthMap> Ptr;
+    typedef std::shared_ptr<DepthMap> Ptr;
 
     DepthMap()
     {   
