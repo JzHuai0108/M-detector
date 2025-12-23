@@ -15,7 +15,7 @@ endif()
 # ------------------------------------------------------------------------------
 if(MSVC)
   # Common flags
-  add_compile_options(/permissive-) 
+  add_compile_options(/permissive- /EHsc /Zc:__cplusplus)
 
   # Per-config optimization + debug info
   add_compile_options(

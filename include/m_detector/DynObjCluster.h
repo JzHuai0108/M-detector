@@ -1,8 +1,9 @@
 #ifndef DYN_OBJ_CLUS_H
 #define DYN_OBJ_CLUS_H
 
-#include <ros/ros.h>
-#include <pcl_conversions/pcl_conversions.h>
+#include <ros/publisher.h>
+// #include <ros/ros.h>
+// #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <tf/transform_listener.h>
 #include <nav_msgs/Odometry.h>

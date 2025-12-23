@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <pcl_conversions/pcl_conversions.h>
+
 #include <m_detector/DynObjFilter.h>
 #include <m_detector/omp_compat.h>
 

@@ -1,4 +1,5 @@
 #include <m_detector/DynObjCluster.h>
+#include <pcl_conversions/pcl_conversions.h>
 #include <m_detector/cluster_predict/EA_disk.h>
 #include <algorithm>
 #include <chrono>
