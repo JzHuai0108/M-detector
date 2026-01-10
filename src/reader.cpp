@@ -26,7 +26,22 @@
 
 namespace fs = std::filesystem;
 
-// ----------------- utilities -----------------
+static std::string getExtNoDot(const std::string& filename) {
+  fs::path p(filename);
+  std::string ext = p.extension().string();  // e.g. ".pcd"
+  if (!ext.empty() && ext[0] == '.') ext.erase(0, 1);
+  return ext;
+}
+
+static std::string makeStampFilename(const std::string& folder,
+                                     const ros::Time& t,
+                                     const std::string& ext_no_dot) {
+  std::ostringstream oss;
+  // ensure exactly 9 digits for nsec
+  oss << t.sec << "." << std::setw(9) << std::setfill('0') << t.nsec << "." << ext_no_dot;
+  return (fs::path(folder) / oss.str()).string();
+}
+
 static double safe_stod(const std::string& s, bool& ok) {
   try { ok = true; return std::stod(s); }
   catch (...) { ok = false; return 0.0; }
@@ -175,36 +190,6 @@ std::vector<Pose> loadTUMPoseFile(const std::string& path) {
   return dedup;
 }
 
-
-// Try to derive timestamp from filename stem.
-// Supports "sec.nsec", "123.456", "scans_000123.456" (last numeric wins).
-bool timestampFromFilename(const std::string& file, ros::Time& t_out) {
-  const std::string stem = fs::path(file).stem().string();
-  // Prefer full "sec.nsec" if two integers separated by '.'
-  std::regex sec_nsec_re(R"((\d+)\.(\d{1,9}))");
-  std::smatch m;
-  if (std::regex_search(stem, m, sec_nsec_re)) {
-    // Normalize nsec to 9 digits by padding/truncating
-    std::string nsec_str = m[2].str();
-    if (nsec_str.size() < 9) nsec_str.append(9 - nsec_str.size(), '0');
-    else if (nsec_str.size() > 9) nsec_str = nsec_str.substr(0,9);
-    uint32_t nsec = static_cast<uint32_t>(std::stoul(nsec_str));
-    uint32_t sec  = static_cast<uint32_t>(std::stoul(m[1].str()));
-    t_out.sec = sec;
-    t_out.nsec = nsec;
-    return true;
-  }
-  // Else use last floating number
-  std::regex float_re(R"((\d+(?:\.\d+)?))");
-  std::sregex_iterator it(stem.begin(), stem.end(), float_re), end;
-  if (it == end) return false;
-  std::sregex_iterator last = it;
-  while (++it != end) last = it;
-  double ts = std::stod(last->str());
-  t_out = ros::Time().fromSec(ts);
-  return true;
-}
-
 template <typename PointT>
 bool loadCloud(const std::string& path, typename pcl::PointCloud<PointT>::Ptr& out) {
   out.reset(new pcl::PointCloud<PointT>());
@@ -342,7 +327,7 @@ int main(int argc, char** argv) {
     ROS_ERROR_STREAM("No poses loaded from: " << pose_file);
     return 1;
   }
-  if (poses.size() != files.size()) {
+  if (poses.size() > files.size()) {
     ROS_ERROR_STREAM("Inconsistent poses " << poses.size() << " and pc files " << files.size());
     return 1;
   }
@@ -367,14 +352,15 @@ int main(int argc, char** argv) {
   waitFor(pub_odom,  odom_topic,   1);
   std::cout << "Playing pc and pose ... " << std::endl;
 
+  const std::string ext = getExtNoDot(files.front());  // from first file
   size_t fi = 0;
-  for (const auto& path : files) {
-    // 1) derive timestamp from filename
-    ros::Time file_stamp;
-    timestampFromFilename(path, file_stamp);
-    Pose pose_match = poses.at(fi);
-    if (pose_match.stamp != file_stamp) {
-      ROS_ERROR_STREAM("Inconsistent pose time " << pose_match.stamp << " and filename " << file_stamp);
+  for (const auto& pose : poses) {
+    const ros::Time t = pose.stamp;
+    const std::string path = makeStampFilename(pc_folder, t, ext);
+    if (!fs::exists(path)) {
+      ROS_ERROR_STREAM("Missing pointcloud file for pose timestamp. "
+                       << "pose_stamp=" << t.sec << "." << std::setw(9) << std::setfill('0') << t.nsec
+                       << " expected_path=" << path);
       return 1;
     }
 
@@ -386,7 +372,7 @@ int main(int argc, char** argv) {
       break;
     }
 
-    cloud_msg.header.stamp = pose_match.stamp;
+    cloud_msg.header.stamp = pose.stamp;
     cloud_msg.header.frame_id = points_frame;
     pub_cloud.publish(cloud_msg);
 
@@ -394,8 +380,8 @@ int main(int argc, char** argv) {
     // Transform cloud to world frame (map) for /cloud_registered
     // -----------------------------------------------------------------------------
     Eigen::Isometry3d T_w_l = Eigen::Isometry3d::Identity();
-    T_w_l.linear() = pose_match.q.toRotationMatrix();
-    T_w_l.translation() = pose_match.t;
+    T_w_l.linear() = pose.q.toRotationMatrix();
+    T_w_l.translation() = pose.t;
     Eigen::Matrix4f T_4f = T_w_l.matrix().cast<float>();
 
     sensor_msgs::PointCloud2 msg_registered;
@@ -420,25 +406,25 @@ int main(int argc, char** argv) {
       pcl::toROSMsg(c_reg, msg_registered);
     }
 
-    msg_registered.header.stamp = pose_match.stamp;
+    msg_registered.header.stamp = pose.stamp;
     msg_registered.header.frame_id = odom_frame; // world/map frame
     pub_registered.publish(msg_registered);
 
-    nav_msgs::Odometry odom = makeOdomMsg(pose_match, odom_frame, child_frame);
-    odom.header.stamp = pose_match.stamp;
+    nav_msgs::Odometry odom = makeOdomMsg(pose, odom_frame, child_frame);
+    odom.header.stamp = pose.stamp;
     pub_odom.publish(odom);
 
     geometry_msgs::TransformStamped T;
-    T.header.stamp = pose_match.stamp;
+    T.header.stamp = pose.stamp;
     T.header.frame_id = odom_frame;
     T.child_frame_id  = child_frame;
-    T.transform.translation.x = pose_match.t.x();
-    T.transform.translation.y = pose_match.t.y();
-    T.transform.translation.z = pose_match.t.z();
-    T.transform.rotation.w = pose_match.q.w();
-    T.transform.rotation.x = pose_match.q.x();
-    T.transform.rotation.y = pose_match.q.y();
-    T.transform.rotation.z = pose_match.q.z();
+    T.transform.translation.x = pose.t.x();
+    T.transform.translation.y = pose.t.y();
+    T.transform.translation.z = pose.t.z();
+    T.transform.rotation.w = pose.q.w();
+    T.transform.rotation.x = pose.q.x();
+    T.transform.rotation.y = pose.q.y();
+    T.transform.rotation.z = pose.q.z();
     br.sendTransform(T);
 
     ros::spinOnce();
