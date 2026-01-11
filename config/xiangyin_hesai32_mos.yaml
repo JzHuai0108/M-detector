@@ -46,7 +46,7 @@ dyn_obj:
     map_cons_depth_thr2: 0.2
     map_cons_hor_thr2: 0.01
     map_cons_ver_thr2: 0.03
-    occ_depth_thr2: 10.15
+    occ_depth_thr2: 0.3
     occ_hor_thr2: 0.01
     occ_ver_thr2: 0.04
     depth_cons_depth_thr2: 0.1
