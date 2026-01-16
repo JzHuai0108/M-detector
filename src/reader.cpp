@@ -353,9 +353,12 @@ int main(int argc, char** argv) {
   std::cout << "Playing pc and pose ... " << std::endl;
 
   const std::string ext = getExtNoDot(files.front());  // from first file
+  const double first_time = poses.front().stamp.toSec();
   size_t fi = 0;
   for (const auto& pose : poses) {
     const ros::Time t = pose.stamp;
+    const double t_sec = t.toSec();
+    const double dt = t_sec - first_time;
     const std::string path = makeStampFilename(pc_folder, t, ext);
     if (!fs::exists(path)) {
       ROS_ERROR_STREAM("Missing pointcloud file for pose timestamp. "
@@ -371,6 +374,7 @@ int main(int argc, char** argv) {
       ROS_WARN_STREAM("Skip unreadable cloud: " << path);
       break;
     }
+    ROS_INFO("Processing frame %zu at time %.9f (dt=%.6f s)", fi, t_sec, dt);
 
     cloud_msg.header.stamp = pose.stamp;
     cloud_msg.header.frame_id = points_frame;
