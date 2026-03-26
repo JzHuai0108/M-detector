@@ -22,7 +22,7 @@ public:
     void push(T op);
     void push_parallel(T &op, int index);
     void push_pos(T &op, int index);
-    void push_parallel_prepare(int length);
+    bool push_parallel_prepare(int length);
     bool empty();
     int size();
 };
@@ -50,8 +50,13 @@ PARALLEL_Q<T>::~PARALLEL_Q()
 template <typename T>
 void PARALLEL_Q<T>::init(int len)
 {
+    if (initialized) delete[] q;
     Q_LEN = len;
     q = new T[Q_LEN];
+    counter = 0;
+    head = 0;
+    tail = 0;
+    is_empty = true;
     initialized = true;
 }
 
@@ -143,13 +148,17 @@ void PARALLEL_Q<T>::push_parallel(T &op, int index)
 }
 
 template <typename T>
-void PARALLEL_Q<T>::push_parallel_prepare(int length)
+bool PARALLEL_Q<T>::push_parallel_prepare(int length)
 {
     assert(initialized && "Queue is not initialized!");
-    assert(counter + length < Q_LEN && "Push Length is out of Queue Capacity!");
-    if (counter == Q_LEN)
+    while (counter + length >= Q_LEN)
     {
-        printf("Queue FULL. Head Element Popped! ");
+        if (counter == 0)
+        {
+            printf("[PARALLEL_Q] Frame too large for buffer (length=%d >= Q_LEN=%d). Frame dropped.\n",
+                   length, Q_LEN);
+            return false;
+        }
         pop();
     }
     counter += length;
@@ -157,6 +166,7 @@ void PARALLEL_Q<T>::push_parallel_prepare(int length)
         is_empty = false;
     tail += length;
     tail %= Q_LEN;
+    return true;
 }
 
 template <typename T>

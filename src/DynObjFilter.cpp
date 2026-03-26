@@ -461,9 +461,6 @@ void DynObjFilter::initFromConfig(const DynObjConfig& c) {
         first_frame->reserve(400000);
         pcl_his_list.push_back(first_frame);
         laserCloudSteadObj_hist = PointCloudXYZI::Ptr(new PointCloudXYZI());
-        laserCloudSteadObj = PointCloudXYZI::Ptr(new PointCloudXYZI());
-        laserCloudDynObj = PointCloudXYZI::Ptr(new PointCloudXYZI());
-        laserCloudDynObj_world = PointCloudXYZI::Ptr(new PointCloudXYZI());
         int xy_ind[3] = {-1, 1};
         for (int ind_hor = 0; ind_hor < 2*hor_num + 1; ind_hor ++)
         {
@@ -522,6 +519,12 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
     // int num_build = 0, num_search_0 = 0, num_research = 0;
     if (feats_undistort == NULL) return;
     int size = feats_undistort->points.size();
+    if (size > points_num_perframe)
+    {
+        printf("[DynObjFilter] Frame has %d points > points_num_perframe=%d. Clamping.\n",
+               size, points_num_perframe);
+        size = points_num_perframe;
+    }
     if (debug_en)
     {
         laserCloudSteadObj_hist.reset(new PointCloudXYZI());
@@ -906,9 +909,10 @@ void  DynObjFilter::filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_
 void  DynObjFilter::Points2Buffer(std::vector<point_soph*> &points, std::vector<int> &index_vector)
 {
     int cur_tail = buffer.tail;
-    buffer.push_parallel_prepare(points.size());
+    if (!buffer.push_parallel_prepare(points.size()))
+        return;
     std::for_each(std::execution::seq, index_vector.begin(), index_vector.end(), [&](const int &i)
-    {   
+    {
         buffer.push_parallel(points[i], cur_tail+i);
     });
 }
