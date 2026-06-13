@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(Eigen3)
+find_dependency(PCL)
+find_dependency(OpenCV)
+find_dependency(yaml-cpp)
+
+if(NOT TARGET lio_common::lio_common)
+  find_dependency(lio_common)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/m_detectorTargets.cmake")

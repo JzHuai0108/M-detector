@@ -1,6 +1,8 @@
 #ifndef PARALLEL_Q_H
 #define PARALLEL_Q_H
 
+#include <cassert>
+
 template <typename T>
 class PARALLEL_Q
 {

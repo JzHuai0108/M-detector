@@ -4,21 +4,16 @@
 // #include <omp.h>
 #include <mutex>
 #include <math.h>
-#include <ros/ros.h>
 // #include <so3_math.h>
 #include <Eigen/Core>
 #include <Eigen/LU>
+#include <lio/time.h>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
-#include <nav_msgs/Path.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/CompressedImage.h>
 #include <pcl/filters/voxel_grid.h>
-#include <sensor_msgs/PointCloud2.h>
-// #include <pcl_conversions/pcl_conversions.h>
 
 #include "m_detector/DynObjCluster.h"
 #include "m_detector/parallel_q.h"
@@ -605,7 +600,6 @@ public:
     bool dyn_filter_en = true;
     std::mutex mtx_case2, mtx_case3; 
     std::vector<int> pos_offset;
-    ros::Publisher demo_pcl_display;
     std::string time_file;
     std::ofstream time_out;
 
@@ -619,12 +613,10 @@ public:
     {};
     ~DynObjFilter(){};
 
-    void init(ros::NodeHandle& nh);
     void init(const std::string& config_yaml_path);
     void initFromConfig(const DynObjConfig& c);
 
-    void filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_end, const V3D & pos_end, const ros::Time& scan_end_time);
-    void publish_dyn(const ros::Publisher & pub_point_out, const ros::Publisher & pub_frame_out, const ros::Publisher & pub_steady_points, const ros::Time& scan_end_time);
+    void filter(PointCloudXYZI::Ptr feats_undistort, const M3D & rot_end, const V3D & pos_end, const lio::Time& scan_end_time);
     void set_path(std::string file_path, std::string file_path_origin);
 
     std::vector<int> get_dyn_labels() const {

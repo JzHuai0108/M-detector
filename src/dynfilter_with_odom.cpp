@@ -13,6 +13,7 @@
 #include <Eigen/Core>
 #include "m_detector/types.h"
 #include <m_detector/DynObjFilter.h>
+#include <m_detector/DynObjFilterRos.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
@@ -111,7 +112,7 @@ void TimerCallback(const ros::TimerEvent& /*e*/)
             DynObjFilt->set_path(file_name, file_name_origin);
 
         DynObjFilt->filter(cur_pc, cur_rot, cur_pos, cur_time);
-        DynObjFilt->publish_dyn(pub_pcl_dyn, pub_pcl_dyn_extend, pub_pcl_std, cur_time);
+        publishDynObjFilterClouds(*DynObjFilt, pub_pcl_dyn, pub_pcl_dyn_extend, pub_pcl_std, cur_time);
         cur_frame ++;
     }
 }
@@ -136,7 +137,7 @@ int main(int argc, char** argv)
        std::cerr << "Failed to create output folders: " << e.what() << std::endl;
     }
 
-    DynObjFilt->init(nh);    
+    DynObjFilt->initFromConfig(loadDynObjConfigFromRos(nh));
     /*** ROS subscribe and publisher initialization ***/
     pub_pcl_dyn_extend = nh.advertise<sensor_msgs::PointCloud2>("/m_detector/frame_out", 10000);  
     pub_pcl_dyn = nh.advertise<sensor_msgs::PointCloud2> ("/m_detector/point_out", 100000);

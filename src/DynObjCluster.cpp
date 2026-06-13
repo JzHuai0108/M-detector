@@ -1,5 +1,4 @@
 #include <m_detector/DynObjCluster.h>
-#include <pcl_conversions/pcl_conversions.h>
 #include <m_detector/cluster_predict/EA_disk.h>
 #include <algorithm>
 #include <chrono>
@@ -17,12 +16,8 @@ inline double secondsSince(const Clock::time_point &start)
 }
 } // namespace
 
-// void DynObjCluster::Init(ros::Publisher &pub_pcl_dyn_extend_in, ros::Publisher &cluster_vis_high_in, ros::Publisher &pub_ground_points_in)
 void DynObjCluster::Init()
 {
-    // pub_pcl_dyn_extend = pub_pcl_dyn_extend_in;
-    // cluster_vis_high = cluster_vis_high_in;
-    // pub_ground_points = pub_ground_points_in;
     // xyz_origin << -20., -20., -20.;
     // maprange << 40., 40., 40.;
     xyz_origin << -100., -100., -20.;
@@ -42,10 +37,9 @@ void DynObjCluster::Init()
     if(out_file != "") out.open(out_file, std::ios::out  | std::ios::binary);
 }
 
-void DynObjCluster::Clusterprocess(std::vector<int> &dyn_tag, pcl::PointCloud<PointType> event_point, const pcl::PointCloud<PointType> &raw_point, const std_msgs::Header &header_in, const Eigen::Matrix3d odom_rot_in, const Eigen::Vector3d odom_pos_in)
+void DynObjCluster::Clusterprocess(std::vector<int> &dyn_tag, pcl::PointCloud<PointType> event_point, const pcl::PointCloud<PointType> &raw_point, const Eigen::Matrix3d odom_rot_in, const Eigen::Vector3d odom_pos_in)
 {
     cluster_begin = Clock::now();
-    header = header_in;
     odom_rot = odom_rot_in;
     odom_pos = odom_pos_in;
     const auto t0 = Clock::now();
@@ -54,27 +48,20 @@ void DynObjCluster::Clusterprocess(std::vector<int> &dyn_tag, pcl::PointCloud<Po
     pcl::PointCloud<PointType>::Ptr cloud_clean_ptr(new pcl::PointCloud<PointType>);
     cloud_clean_ptr = event_point.makeShared();
     bbox_t bbox_high;
-    ClusterAndTrack(dyn_tag, cloud_clean_ptr, pub_pcl_before_high, header, pub_pcl_after_high, cluster_vis_high, predict_path_high, bbox_high, delta_t, raw_point);
+    ClusterAndTrack(dyn_tag, cloud_clean_ptr, bbox_high, delta_t, raw_point);
     time_total = secondsSince(t0);
     time_ind++;
     time_total_average = time_total_average * (time_ind - 1) / time_ind + time_total / time_ind;
     cur_frame += 1;
 }
 
-void DynObjCluster::ClusterAndTrack(std::vector<int> &dyn_tag, pcl::PointCloud<PointType>::Ptr &points_in, ros::Publisher points_in_msg, std_msgs::Header header_in,
-                                    ros::Publisher points_out_msg,
-                                    ros::Publisher cluster_vis, ros::Publisher predict_path, bbox_t &bbox, double delta,
-                                    const pcl::PointCloud<PointType> &raw_point)
+void DynObjCluster::ClusterAndTrack(std::vector<int> &dyn_tag, pcl::PointCloud<PointType>::Ptr &points_in, bbox_t &bbox, double delta, const pcl::PointCloud<PointType> &raw_point)
 {
-    sensor_msgs::PointCloud2 pcl4_ros_msg;
-    pcl::toROSMsg(*points_in, pcl4_ros_msg);
-    pcl4_ros_msg.header.stamp = header_in.stamp;
-    pcl4_ros_msg.header.frame_id = header_in.frame_id;
     std::vector<pcl::PointIndices> cluster_indices;
     std::vector<std::vector<int>> voxel_clusters;
     std::unordered_set<int> used_map_set;
     GetClusterResult_voxel(points_in, umap, voxel_clusters, used_map_set);
-    PubClusterResult_voxel(dyn_tag, header_in, bbox, delta, voxel_clusters, raw_point, used_map_set);
+    PubClusterResult_voxel(dyn_tag, bbox, delta, voxel_clusters, raw_point, used_map_set);
 }
 
 void DynObjCluster::GetClusterResult(pcl::PointCloud<PointType>::Ptr points_in, std::vector<pcl::PointIndices> &cluster_indices)
@@ -113,14 +100,12 @@ void DynObjCluster::GetClusterResult_voxel(pcl::PointCloud<PointType>::Ptr point
     if(out_file != "") out << secondsSince(t0) << " ";
 }
 
-void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, std_msgs::Header current_header, bbox_t &bbox, double delta,
+void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, bbox_t &bbox, double delta,
                                            std::vector<std::vector<int>> &voxel_clusters, const pcl::PointCloud<PointType> &raw_point, std::unordered_set<int> &used_map_set)
 {
     int j = 0;
     pcl::PointCloud<PointType> cluster_points;
     pcl::PointCloud<PointType> true_ground;
-    visualization_msgs::MarkerArray numbers;
-    numbers.markers.reserve(200);
     cluster_points.reserve(raw_point.size());
     true_ground.reserve(raw_point.size());
     Eigen::Matrix3f R = odom_rot.cast<float>();
@@ -164,27 +149,22 @@ void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, std_msgs::
             bbox.Point_cloud.push_back(clus_pcl);
             std::vector<int> new_point_indices;
             bbox.Point_indices.push_back(new_point_indices);
-            geometry_msgs::PoseWithCovarianceStamped center;
-            center.header = current_header;
-            center.pose.pose.position.x = (x_max + x_min) / 2;
-            center.pose.pose.position.y = (y_max + y_min) / 2;
-            center.pose.pose.position.z = (z_max + z_min) / 2;
-            center.pose.pose.orientation.x = 0;
-            center.pose.pose.orientation.y = 0;
-            center.pose.pose.orientation.z = 0;
-            center.pose.pose.orientation.w = 1;
-            center.pose.covariance[0 * 6 + 0] = x_size / 2;
-            center.pose.covariance[1 * 6 + 1] = y_size / 2;
-            center.pose.covariance[2 * 6 + 2] = z_size / 2;
-            center.pose.covariance[3 * 6 + 3] = x_size;
-            center.pose.covariance[4 * 6 + 4] = y_size;
-            center.pose.covariance[5 * 6 + 5] = z_size;
-            center.pose.covariance[2 * 6 + 3] = x_max;
-            center.pose.covariance[3 * 6 + 4] = y_max;
-            center.pose.covariance[4 * 6 + 5] = z_max;
-            center.pose.covariance[3 * 6 + 2] = x_min;
-            center.pose.covariance[4 * 6 + 3] = y_min;
-            center.pose.covariance[5 * 6 + 4] = z_min;
+            ClusterBoxCenter center;
+            center.position.x() = (x_max + x_min) / 2;
+            center.position.y() = (y_max + y_min) / 2;
+            center.position.z() = (z_max + z_min) / 2;
+            center.covariance[0 * 6 + 0] = x_size / 2;
+            center.covariance[1 * 6 + 1] = y_size / 2;
+            center.covariance[2 * 6 + 2] = z_size / 2;
+            center.covariance[3 * 6 + 3] = x_size;
+            center.covariance[4 * 6 + 4] = y_size;
+            center.covariance[5 * 6 + 5] = z_size;
+            center.covariance[2 * 6 + 3] = x_max;
+            center.covariance[3 * 6 + 4] = y_max;
+            center.covariance[4 * 6 + 5] = z_max;
+            center.covariance[3 * 6 + 2] = x_min;
+            center.covariance[4 * 6 + 3] = y_min;
+            center.covariance[5 * 6 + 4] = z_min;
             bbox.Center.push_back(center);
             pcl::PointCloud<PointType> new_pcl;
             bbox.Ground_points.push_back(new_pcl);
@@ -215,20 +195,20 @@ void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, std_msgs::
     std::for_each(std::execution::seq, index_bbox.begin(), index_bbox.end(), [&](const int &bbox_i)
                   {
         PointType center;
-        float x_size = bbox.Center[bbox_i].pose.covariance[3*6+3];
-        float y_size = bbox.Center[bbox_i].pose.covariance[4*6+4];
-        float z_size = bbox.Center[bbox_i].pose.covariance[5*6+5];
-        center.x = bbox.Center[bbox_i].pose.pose.position.x;
-        center.y = bbox.Center[bbox_i].pose.pose.position.y;
-        center.z = bbox.Center[bbox_i].pose.pose.position.z;
+        float x_size = bbox.Center[bbox_i].covariance[3*6+3];
+        float y_size = bbox.Center[bbox_i].covariance[4*6+4];
+        float z_size = bbox.Center[bbox_i].covariance[5*6+5];
+        center.x = bbox.Center[bbox_i].position.x();
+        center.y = bbox.Center[bbox_i].position.y();
+        center.z = bbox.Center[bbox_i].position.z();
         PointType max;
-        max.x = bbox.Center[bbox_i].pose.covariance[2*6+3];
-        max.y = bbox.Center[bbox_i].pose.covariance[3*6+4];
-        max.z = bbox.Center[bbox_i].pose.covariance[4*6+5];
+        max.x = bbox.Center[bbox_i].covariance[2*6+3];
+        max.y = bbox.Center[bbox_i].covariance[3*6+4];
+        max.z = bbox.Center[bbox_i].covariance[4*6+5];
         PointType min;
-        min.x = bbox.Center[bbox_i].pose.covariance[3*6+2];
-        min.y = bbox.Center[bbox_i].pose.covariance[4*6+3];
-        min.z = bbox.Center[bbox_i].pose.covariance[5*6+4];
+        min.x = bbox.Center[bbox_i].covariance[3*6+2];
+        min.y = bbox.Center[bbox_i].covariance[4*6+3];
+        min.z = bbox.Center[bbox_i].covariance[5*6+4];
         int n_x = std::max(1.0f, 1.0f * x_size) / Voxel_revolusion;
         int n_y = std::max(1.0f, 1.0f * y_size) / Voxel_revolusion;
         int n_z = std::max(1.0f, 1.0f * z_size) / Voxel_revolusion;
@@ -339,16 +319,16 @@ void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, std_msgs::
     std::vector<double> region_growth_time(index_bbox.size(), 0.0);
     std::for_each(std::execution::seq, index_bbox.begin(), index_bbox.end(), [&](const int &k)
     {   
-        geometry_msgs::PoseWithCovarianceStamped center = bbox.Center[k];
-        float x_size = center.pose.covariance[3*6+3];
-        float y_size = center.pose.covariance[4*6+4];
-        float z_size = center.pose.covariance[5*6+5];
-        float x_min = center.pose.covariance[3*6+2];
-        float y_min = center.pose.covariance[4*6+3];
-        float z_min = center.pose.covariance[5*6+4];
-        float x_max = center.pose.covariance[2*6+3];
-        float y_max = center.pose.covariance[3*6+4];
-        float z_max = center.pose.covariance[4*6+5];
+        const ClusterBoxCenter& center = bbox.Center[k];
+        float x_size = center.covariance[3*6+3];
+        float y_size = center.covariance[4*6+4];
+        float z_size = center.covariance[5*6+5];
+        float x_min = center.covariance[3*6+2];
+        float y_min = center.covariance[4*6+3];
+        float z_min = center.covariance[5*6+4];
+        float x_max = center.covariance[2*6+3];
+        float y_max = center.covariance[3*6+4];
+        float z_max = center.covariance[4*6+5];
 
         Eigen::Vector3f ground_norm(0.0, 0.0, 0.0);
         Eigen::Vector4f ground_plane;
@@ -386,8 +366,6 @@ void DynObjCluster::PubClusterResult_voxel(std::vector<int> &dyn_tag, std_msgs::
     }
     if(out_file != "") out << total_ground_estimate_total_time << " ";
     if(out_file != "") out << total_region_growth_time << " ";
-
-    // cluster_vis_high.publish(numbers);
 
     for (auto ite = used_map_set.begin(); ite != used_map_set.end(); ite++)
     {
