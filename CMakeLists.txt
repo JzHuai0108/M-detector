@@ -216,7 +216,8 @@ if(catkin_FOUND)
     FILES_MATCHING
       PATTERN "*.launch"
       PATTERN "*.xml"
-      PATTERN "*.yaml"
+      PATTERN "kuangye_*.yaml"
+      PATTERN "xiangyin_*.yaml"
       PATTERN "*.rviz"
   )
 else()
@@ -243,6 +244,14 @@ else()
     EXPORT m_detectorTargets
     NAMESPACE m_detector::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/m_detector
+  )
+  install(FILES
+    config/kuangye_hesai16_building_mos.yaml
+    config/kuangye_hesai16_mos.yaml
+    config/kuangye_mid360_mos.yaml
+    config/kuangye_vlp16_mos.yaml
+    config/xiangyin_hesai32_mos.yaml
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/config
   )
   configure_package_config_file(
     cmake/m_detectorConfig.cmake.in
