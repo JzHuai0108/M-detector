@@ -49,7 +49,7 @@ endif ()
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
-find_package(yaml-cpp REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 include_directories(
         ${catkin_INCLUDE_DIRS}

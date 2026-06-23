@@ -113,9 +113,8 @@ endif()
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(yaml-cpp REQUIRED)
-
-find_package(lio_common REQUIRED CONFIG)
+find_package(yaml-cpp CONFIG REQUIRED)
+find_package(lio_common CONFIG REQUIRED)
 if(NOT TARGET lio_common::lio_common)
   message(FATAL_ERROR "lio_common was found, but it did not export lio_common::lio_common.")
 endif()
@@ -163,7 +162,7 @@ target_link_libraries(${PROJECT_NAME}
     lio_common::lio_common
     ${PCL_LIBRARIES}
     ${OpenCV_LIBS}
-	    yaml-cpp
+	  yaml-cpp::yaml-cpp
 )
 
 if(catkin_FOUND)
